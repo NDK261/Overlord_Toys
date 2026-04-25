@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+@theme {
+  /* Colors */
+  --color-background: #06151a;
+  --color-surface: #06151a;
+  --color-surface-dim: #06151a;
+  --color-surface-bright: #2c3c41;
+  --color-surface-container-lowest: #021015;
+  --color-surface-container-low: #0e1e23;
+  --color-surface-container: #122227;
+  --color-surface-container-high: #1d2c32;
+  --color-surface-container-highest: #28373d;
+  --color-surface-variant: #28373d;
+  --color-on-surface: #d4e5ec;
+  --color-on-surface-variant: #bbcac6;
+  --color-on-background: #d4e5ec;
+  --color-primary: #fcfffd;
+  --color-primary-container: #6ff7e8;
+  --color-on-primary: #003732;
+  --color-on-primary-container: #007068;
+  --color-primary-fixed: #70f8e9;
+  --color-primary-fixed-dim: #4edbcd;
+  --color-secondary: #80d1f7;
+  --color-secondary-container: #007193;
+  --color-on-secondary: #003547;
+  --color-on-secondary-container: #cdedff;
+  --color-secondary-fixed: #bfe8ff;
+  --color-secondary-fixed-dim: #80d1f7;
+  --color-tertiary: #fffeff;
+  --color-tertiary-container: #ffe075;
+  --color-tertiary-fixed: #ffe179;
+  --color-tertiary-fixed-dim: #e2c55d;
+  --color-on-tertiary: #3b2f00;
+  --color-on-tertiary-container: #786200;
+  --color-error: #ffb4ab;
+  --color-error-container: #93000a;
+  --color-on-error: #690005;
+  --color-on-error-container: #ffdad6;
+  --color-outline: #859491;
+  --color-outline-variant: #3c4947;
+  --color-inverse-surface: #d4e5ec;
+  --color-inverse-on-surface: #233338;
+  --color-inverse-primary: #006a62;
+  --color-surface-tint: #4edbcd;
+  --color-on-primary-fixed: #00201d;
+  --color-on-primary-fixed-variant: #00504a;
+  --color-on-secondary-fixed: #001f2a;
+  --color-on-secondary-fixed-variant: #004d65;
+  --color-on-tertiary-fixed: #231b00;
+  --color-on-tertiary-fixed-variant: #554500;
+
+  /* Border Radius */
+  --radius-DEFAULT: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+
+  /* Font Families */
+  --font-headline: "Plus Jakarta Sans", "Poppins", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "Inter", sans-serif;
+}
+
+/* ─── Custom Stitch Utilities ─── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.glow-hover:hover {
+  box-shadow: 0 0 25px rgba(111, 247, 232, 0.15);
+  transform: translateY(-4px);
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, #6FF7E8, #1F7EA1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(90deg, #6FF7E8, #1F7EA1);
+}
+
+@keyframes cart-badge-pop {
+  0% {
+    transform: scale(0.78);
+    filter: brightness(0.95);
+  }
+
+  60% {
+    transform: scale(1.15);
+    filter: brightness(1.08);
+  }
+
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+@keyframes gallery-image-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Material Symbols */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
