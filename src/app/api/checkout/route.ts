@@ -1,7 +1,7 @@
 // src/app/api/checkout/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createPublicServerSupabaseClient } from "@/lib/supabase/server";
-import { createPayOSPaymentLink } from "@/lib/payos";
+import { PaymentFactory } from "@/lib/payment/PaymentFactory";
 
 export async function POST(request: NextRequest) {
   try {
@@ -102,30 +102,32 @@ export async function POST(request: NextRequest) {
     const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
     if (itemsError) throw itemsError;
 
-    // 4. Xử lý thanh toán PayOS
-    let paymentUrl = null;
-    if (paymentMethod === "payos") {
-      // Mã đơn hàng cho PayOS phải là số. Ta dùng timestamp + vài số cuối của UUID hoặc sequence
-      const orderCode = Number(String(Date.now()).slice(-9)); 
-      
-      paymentUrl = await createPayOSPaymentLink({
-        orderCode,
-        amount: totalPrice,
-        description: `Thanh toan DH #${orderCode}`,
-        cancelUrl: `${process.env.NEXT_PUBLIC_APP_URL}/checkout`,
-        returnUrl: `${process.env.NEXT_PUBLIC_APP_URL}/success?orderId=${order.id}`,
-        items: items.map((item: any) => ({
-          name: item.product.name.slice(0, 20),
-          quantity: item.quantity,
-          price: item.product.price,
-        })),
-        buyerName: customerInfo.name,
-        buyerEmail: customerInfo.email,
-        buyerPhone: customerInfo.phone,
-        buyerAddress: customerInfo.address,
-      });
+    // 4. Xử lý thanh toán thông qua PaymentFactory (Factory Method Pattern)
+    const paymentProvider = PaymentFactory.getProvider(paymentMethod);
+    const orderCode = Number(String(Date.now()).slice(-9));
+    
+    const paymentUrl = await paymentProvider.createPaymentLink({
+      orderId: order.id,
+      orderCode,
+      amount: totalPrice,
+      description: `Thanh toan DH #${orderCode}`,
+      cancelUrl: `${process.env.NEXT_PUBLIC_APP_URL}/checkout`,
+      returnUrl: `${process.env.NEXT_PUBLIC_APP_URL}/success?orderId=${order.id}`,
+      customerInfo: {
+        name: customerInfo.name,
+        email: customerInfo.email,
+        phone: customerInfo.phone,
+        address: customerInfo.address,
+      },
+      items: items.map((item: any) => ({
+        name: item.product.name.slice(0, 20),
+        quantity: item.quantity,
+        price: item.product.price,
+      })),
+    });
 
-      // Cập nhật URL thanh toán vào đơn hàng
+    // Cập nhật URL thanh toán vào đơn hàng nếu có (dành cho PayOS, VNPay...)
+    if (paymentUrl) {
       await supabase
         .from("orders")
         .update({ payment_url: paymentUrl })
