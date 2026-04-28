@@ -130,8 +130,8 @@ products (id, name, slug, description, price, stock, category_id, thumbnail_url,
 product_images (id, product_id, url)
 
 -- Đơn hàng
-orders (id, user_id, customer_name, customer_phone, customer_address, 
-        total_price, status, payment_method, created_at)
+orders (id, order_code, user_id, customer_name, customer_phone, customer_email, customer_address, 
+        total_price, shipping_fee, discount_amount, voucher_code, status, payment_method, payment_url, created_at)
 
 -- Chi tiết đơn hàng
 order_items (id, order_id, product_id, quantity, price)
@@ -189,7 +189,7 @@ npm run dev
 
 - [x] **Phase 1**: Khởi tạo project Next.js 15 + Tailwind 4.
 - [x] **Phase 2**: Thiết kế UI Mockup (Home, Shop, Cart, Login/Register).
-- [/] **Phase 3**: Kết nối Supabase (Products API, Auth logic). 
-- [/] **Phase 4**: Admin Dashboard (CRUD sản phẩm cơ bản).
-- [ ] **Phase 5**: Tích hợp thanh toán thực tế (PayOS/VNPay) + Resend Email.
+- [x] **Phase 3**: Kết nối Supabase (Products API, Auth logic). 
+- [x] **Phase 4**: Admin Dashboard (CRUD sản phẩm cơ bản).
+- [/] **Phase 5**: Tích hợp thanh toán thực tế (PayOS/VNPay) + Resend Email. *(PayOS: Đang tích hợp. VNPay/Resend: Chưa làm)*.
 - [ ] **Phase 6**: Optimization & SEO.

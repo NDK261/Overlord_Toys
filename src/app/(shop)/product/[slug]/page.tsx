@@ -219,10 +219,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                    </div>
                    <div className="relative h-full flex flex-col justify-end">
                       <p className="text-[10px] font-mono leading-tight text-[#6FF7E8]/40">
-                        // INITIALIZING SCAN...<br/>
-                        // MECHANICAL_LAYER: OK<br/>
-                        // ARTICULATION_CORE: STABLE<br/>
-                        // AESTHETIC_SYNC: 99.8%<br/>
+                        {"// INITIALIZING SCAN..."}<br/>
+                        {"// MECHANICAL_LAYER: OK"}<br/>
+                        {"// ARTICULATION_CORE: STABLE"}<br/>
+                        {"// AESTHETIC_SYNC: 99.8%"}<br/>
                       </p>
                    </div>
                 </div>

@@ -209,7 +209,7 @@ export function useCart() {
       localStorage.setItem("toy_store_vouchers", JSON.stringify(next));
       return next;
     });
-  }, [subtotal, isFirstOrder]);
+  }, [subtotal]);
 
   const removeVoucher = useCallback((type: "freeship" | "discount") => {
     setAppliedVouchers((prev) => {

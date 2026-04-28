@@ -52,7 +52,7 @@ function SuccessContent() {
     }
 
     fetchOrderDetails();
-  }, [orderId]);
+  }, [orderId, clearCart]);
 
   if (loading) {
     return (

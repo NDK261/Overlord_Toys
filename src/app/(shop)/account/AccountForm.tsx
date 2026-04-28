@@ -53,7 +53,7 @@ export function AccountForm({ initialProfile, userEmail, updateProfile }: Accoun
           />
         </div>
         <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/70 px-1 ml-1">Email <span className="text-[#6FF7E8]/50 ml-2">// Immutable</span></label>
+          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/70 px-1 ml-1">Email <span className="text-[#6FF7E8]/50 ml-2">{"// Immutable"}</span></label>
           <input 
             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-on-surface-variant cursor-not-allowed opacity-50 outline-none" 
             disabled 
