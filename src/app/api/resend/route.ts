@@ -1,40 +1,43 @@
 // src/app/api/resend/route.ts
-// POST /api/resend
-// Chức năng: Gửi email xác nhận đơn hàng qua Resend
+// POST /api/resend - send a simple order confirmation email through Resend.
 
 import { NextRequest, NextResponse } from "next/server";
+import { sendOrderConfirmationEmail } from "@/lib/resend";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { to, orderId, customerName, items, totalPrice } = body;
+    const { to, orderId, customerName, items, totalPrice, shippingAddress } = body;
 
     if (!to || !orderId) {
       return NextResponse.json(
-        { error: "Thiếu thông tin email" },
+        { error: "Missing email or order id" },
         { status: 400 }
       );
     }
 
-    // TODO: Gửi email qua Resend
-    // const resend = new Resend(process.env.RESEND_API_KEY)
-    // await resend.emails.send({
-    //   from: "Toy Store <noreply@yourdomain.com>",
-    //   to,
-    //   subject: `Xác nhận đơn hàng #${orderId}`,
-    //   html: generateOrderEmailHTML({ orderId, customerName, items, totalPrice }),
-    // })
-
-    console.log(`[RESEND] Email sent to ${to} for order ${orderId}`);
+    await sendOrderConfirmationEmail({
+      to,
+      orderId,
+      customerName: customerName || "Customer",
+      items: Array.isArray(items) ? items : [],
+      totalPrice: Number(totalPrice || 0),
+      shippingAddress: shippingAddress || "Not provided",
+    });
 
     return NextResponse.json({
       success: true,
-      message: `Email đã được gửi đến ${to}`,
+      message: `Email sent to ${to}`,
     });
   } catch (error) {
     console.error("[RESEND ERROR]", error);
     return NextResponse.json(
-      { error: "Không thể gửi email, vui lòng thử lại" },
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Could not send email. Please try again.",
+      },
       { status: 500 }
     );
   }

@@ -13,13 +13,25 @@ export default function LoginPage() {
   const [error, setError]       = useState<string | null>(null);
   const [showPw, setShowPw]     = useState(false);
 
+  const getSafeRedirectPath = () => {
+    const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl");
+
+    if (callbackUrl?.startsWith("/") && !callbackUrl.startsWith("//")) {
+      return callbackUrl;
+    }
+
+    return "/";
+  };
+
   const handleGoogleLogin = async () => {
     if (!supabase) return;
+    const next = getSafeRedirectPath();
+
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/`,
+          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
         },
       });
       if (error) setError(error.message);
@@ -44,7 +56,7 @@ export default function LoginPage() {
       if (authError) {
         setError(authError.message);
       } else if (data.user) {
-        router.push("/");
+        router.push(getSafeRedirectPath());
         router.refresh();
       }
     } catch (err) {

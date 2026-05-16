@@ -3,6 +3,8 @@ import Link from "next/link";
 import { getProductBySlug, getProducts } from "@/lib/products";
 import { notFound } from "next/navigation";
 import { AddToCartButton, ImageGallery, ProductPurchaseControls } from "@/components/product";
+import { Price } from "@/components/settings/Price";
+import { PreferenceGate } from "@/components/settings/PreferenceGate";
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
@@ -102,10 +104,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             {/* Price Component */}
             <div className="py-6 border-y border-white/5 flex items-baseline gap-6">
                 <span className="text-4xl font-['Plus_Jakarta_Sans'] font-extrabold text-gradient">
-                 {product.price.toLocaleString("vi-VN")}đ
+                 <Price amount={product.price} />
                </span>
                <span className="text-xl text-white/20 line-through font-medium">
-                 {(product.price * 1.2).toLocaleString("vi-VN")}đ
+                 <Price amount={product.price * 1.2} />
                </span>
                <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest">
                  -20% Tier
@@ -231,6 +233,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         </section>
 
         {/* --- RELATED ARTIFACTS --- */}
+        <PreferenceGate preference="productRecommendations">
         <section className="animate-fade-in-up">
           <div className="flex items-end justify-between mb-16 px-4">
              <div className="space-y-2">
@@ -264,7 +267,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   <h3 className="font-bold text-lg text-white group-hover:text-[#6FF7E8] transition-colors line-clamp-1">{p.name}</h3>
                   <div className="flex justify-between items-center pt-2">
                     <span className="font-['Plus_Jakarta_Sans'] font-extrabold text-[#6FF7E8]">
-                      {p.price.toLocaleString("vi-VN")}đ
+                      <Price amount={p.price} />
                     </span>
                     <AddToCartButton
                       ariaLabel={`Them ${p.name} vao gio hang`}
@@ -279,6 +282,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             ))}
           </div>
         </section>
+        </PreferenceGate>
 
       </div>
     </div>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
+import { Price } from "@/components/settings/Price";
 
 export function FilterSidebar() {
   const router = useRouter();
@@ -112,7 +113,7 @@ export function FilterSidebar() {
           <div>
             <div className="flex items-center justify-between mb-4">
               <span className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Price Protocol</span>
-              <span className="text-[10px] text-primary-container font-mono">{new Intl.NumberFormat('vi-VN').format(maxPrice)}đ</span>
+              <Price amount={maxPrice} className="text-[10px] text-primary-container font-mono" />
             </div>
             <input 
               className="w-full h-1 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-primary-container" 
@@ -124,8 +125,8 @@ export function FilterSidebar() {
               onChange={(e) => setMaxPrice(parseInt(e.target.value))}
             />
             <div className="flex justify-between mt-2 text-[10px] font-bold text-on-surface-variant">
-              <span>0đ</span>
-              <span>15Mđ</span>
+              <Price amount={0} />
+              <Price amount={15000000} />
             </div>
           </div>
           <button 

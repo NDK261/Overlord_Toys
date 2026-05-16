@@ -2,11 +2,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createPublicServerSupabaseClient } from "@/lib/supabase/server";
 import { PaymentFactory } from "@/lib/payment/PaymentFactory";
+import { sendOrderConfirmationEmail } from "@/lib/resend";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { items, customerInfo, paymentMethod, vouchers: appliedVouchers } = body;
+    const {
+      items,
+      customerInfo,
+      paymentMethod,
+      vouchers: appliedVouchers,
+      notificationSettings,
+    } = body;
+    const shouldSendOrderUpdates = notificationSettings?.orderUpdates !== false;
 
     if (!items || items.length === 0 || !customerInfo || !paymentMethod) {
       return NextResponse.json({ error: "Thiếu thông tin đơn hàng" }, { status: 400 });
@@ -134,10 +142,30 @@ export async function POST(request: NextRequest) {
         .eq("id", order.id);
     }
 
+    if (shouldSendOrderUpdates) {
+      try {
+        await sendOrderConfirmationEmail({
+          to: customerInfo.email,
+          orderId: order.id,
+          customerName: customerInfo.name,
+          shippingAddress: customerInfo.address,
+          totalPrice,
+          items: items.map((item: any) => ({
+            name: item.product.name,
+            quantity: item.quantity,
+            price: item.product.price,
+          })),
+        });
+      } catch (emailError) {
+        console.error("[ORDER EMAIL ERROR]", emailError);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       orderId: order.id,
       paymentUrl,
+      orderUpdatesEmail: shouldSendOrderUpdates ? "enabled" : "disabled",
     });
   } catch (error: any) {
     console.error("[CHECKOUT ERROR]", error);

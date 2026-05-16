@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/hooks/useCart";
 import type { Product } from "@/types/product";
+import { Price } from "@/components/settings/Price";
 
 interface ProductPurchaseControlsProps {
   product: Product;
@@ -55,7 +56,7 @@ export default function ProductPurchaseControls({ product }: ProductPurchaseCont
       </div>
       <div className="flex items-center gap-2 text-sm text-[#6FF7E8]">
         <span className="material-symbols-outlined text-lg">rocket_launch</span>
-        <span className="font-medium">Free shipping for orders over 500.000đ</span>
+        <span className="font-medium">Free shipping for orders over <Price amount={500000} /></span>
       </div>
     </div>
   );

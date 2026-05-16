@@ -6,6 +6,7 @@ import { Suspense, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import Image from "next/image";
 import { useCart } from "@/hooks/useCart";
+import { Price } from "@/components/settings/Price";
 
 function SuccessContent() {
   const { clearCart } = useCart();
@@ -147,12 +148,12 @@ function SuccessContent() {
                 <div className="flex-1 min-w-0">
                   <h4 className="text-white text-base md:text-lg font-bold truncate mb-1">{item.products?.name}</h4>
                   <p className="text-on-surface-variant text-sm opacity-80 font-medium">
-                    {item.quantity} x {item.price.toLocaleString('vi-VN')}đ
+                    {item.quantity} x <Price amount={item.price} />
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-[#6FF7E8] font-black font-mono text-base md:text-lg">
-                    {(item.quantity * item.price).toLocaleString('vi-VN')}đ
+                    <Price amount={item.quantity * item.price} />
                   </p>
                 </div>
               </div>
@@ -165,22 +166,22 @@ function SuccessContent() {
           <div className="max-w-sm ml-auto space-y-3">
             <div className="flex justify-between text-xs text-on-surface-variant/70 uppercase font-black tracking-widest">
               <span>Tiền hàng</span>
-              <span className="text-white">{(order.total_price - order.shipping_fee + order.discount_amount).toLocaleString('vi-VN')}đ</span>
+              <Price amount={order.total_price - order.shipping_fee + order.discount_amount} className="text-white" />
             </div>
             <div className="flex justify-between text-xs text-on-surface-variant/70 uppercase font-black tracking-widest">
               <span>Phí vận chuyển</span>
-              <span className="text-white">{order.shipping_fee === 0 ? 'Miễn phí' : `${order.shipping_fee.toLocaleString('vi-VN')}đ`}</span>
+              <span className="text-white">{order.shipping_fee === 0 ? 'Miễn phí' : <Price amount={order.shipping_fee} />}</span>
             </div>
             {order.discount_amount > 0 && (
               <div className="flex justify-between text-xs text-[#6FF7E8] uppercase font-black tracking-widest">
                 <span>Giảm giá</span>
-                <span>-{order.discount_amount.toLocaleString('vi-VN')}đ</span>
+                <Price amount={order.discount_amount} negative />
               </div>
             )}
             <div className="pt-4 border-t border-white/10 flex justify-between items-end">
               <span className="text-[10px] text-[#6FF7E8] uppercase font-black tracking-[0.3em]">Total Amount</span>
               <span className="text-3xl text-white font-black font-mono leading-none tracking-tighter">
-                {order.total_price.toLocaleString('vi-VN')}đ
+                <Price amount={order.total_price} />
               </span>
             </div>
           </div>

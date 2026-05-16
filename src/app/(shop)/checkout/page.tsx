@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/hooks/useCart";
 import { useUser } from "@/hooks/useUser";
+import { useAccountSettings } from "@/hooks/useAccountSettings";
+import { Price } from "@/components/settings/Price";
 
 export default function CheckoutPage() {
   const { 
@@ -13,8 +15,10 @@ export default function CheckoutPage() {
     totalPrice, appliedVouchers, clearCart, isLoaded: cartLoaded 
   } = useCart();
   const { user, profile, loading: userLoading } = useUser();
+  const { settings, loading: settingsLoading } = useAccountSettings();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [paymentTouched, setPaymentTouched] = useState(false);
 
   useEffect(() => {
     if (cartLoaded && items.length === 0) {
@@ -30,6 +34,15 @@ export default function CheckoutPage() {
     paymentMethod: "payos"
   });
 
+  useEffect(() => {
+    if (settingsLoading || paymentTouched) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      paymentMethod: settings.shopping.defaultPaymentMethod,
+    }));
+  }, [paymentTouched, settings.shopping.defaultPaymentMethod, settingsLoading]);
+
   // Tự động điền dữ liệu khi user hoặc profile sẵn sàng
   useEffect(() => {
     if (!userLoading && (user || profile)) {
@@ -43,7 +56,7 @@ export default function CheckoutPage() {
     }
   }, [user, profile, userLoading]);
 
-  const isLoaded = cartLoaded && !userLoading;
+  const isLoaded = cartLoaded && !userLoading && !settingsLoading;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -68,6 +81,7 @@ export default function CheckoutPage() {
           },
           paymentMethod: formData.paymentMethod,
           vouchers: appliedVouchers,
+          notificationSettings: settings.notifications,
         }),
       });
 
@@ -161,7 +175,10 @@ export default function CheckoutPage() {
             </div>
             <div className="space-y-4">
               <label 
-                onClick={() => setFormData(p => ({...p, paymentMethod: "payos"}))}
+                onClick={() => {
+                  setPaymentTouched(true);
+                  setFormData(p => ({...p, paymentMethod: "payos"}));
+                }}
                 className={`relative flex items-center p-5 cursor-pointer rounded-xl glass-card transition-all border-l-4 ${formData.paymentMethod === "payos" ? "border-l-[#6FF7E8] bg-[#6FF7E8]/10 shadow-[0_0_25px_rgba(111,247,232,0.2)]" : "border-white/5 hover:bg-white/5"}`}
               >
                 <div className="flex-1 flex items-center gap-4">
@@ -175,7 +192,10 @@ export default function CheckoutPage() {
               </label>
 
               <label 
-                onClick={() => setFormData(p => ({...p, paymentMethod: "cod"}))}
+                onClick={() => {
+                  setPaymentTouched(true);
+                  setFormData(p => ({...p, paymentMethod: "cod"}));
+                }}
                 className={`relative flex items-center p-5 cursor-pointer rounded-xl glass-card transition-all border-l-4 ${formData.paymentMethod === "cod" ? "border-l-[#6FF7E8] bg-[#6FF7E8]/10 shadow-[0_0_25px_rgba(111,247,232,0.2)]" : "border-white/5 hover:bg-white/5"}`}
               >
                 <div className="flex-1 flex items-center gap-4">
@@ -186,6 +206,20 @@ export default function CheckoutPage() {
                   </div>
                 </div>
               </label>
+            </div>
+            <div className="mt-6 rounded-lg border border-white/5 bg-white/[0.03] p-4">
+              <div className="flex items-start gap-3">
+                <span className="material-symbols-outlined text-base text-[#6FF7E8]">
+                  notifications
+                </span>
+                <p className="text-xs leading-relaxed text-on-surface-variant">
+                  Order update emails are{" "}
+                  <span className="font-bold text-on-surface">
+                    {settings.notifications.orderUpdates ? "enabled" : "disabled"}
+                  </span>
+                  .
+                </p>
+              </div>
             </div>
           </section>
 
@@ -221,7 +255,7 @@ export default function CheckoutPage() {
                     <h3 className="font-headline font-bold text-xs leading-snug text-[#EAFAF8] truncate">{item.product.name}</h3>
                     <div className="flex justify-between items-center mt-2">
                       <p className="text-[10px] text-on-surface-variant/60 font-black uppercase tracking-widest">Qty: {item.quantity}</p>
-                      <p className="font-headline font-bold text-[#6FF7E8] text-xs">{(item.product.price * item.quantity).toLocaleString("vi-VN")}đ</p>
+                      <Price amount={item.product.price * item.quantity} className="font-headline font-bold text-[#6FF7E8] text-xs" />
                     </div>
                   </div>
                 </div>
@@ -231,16 +265,16 @@ export default function CheckoutPage() {
             <div className="space-y-4 pt-4">
               <div className="flex justify-between items-center text-on-surface-variant">
                 <span className="font-label text-[10px] uppercase tracking-widest font-black">Subtotal</span>
-                <span className="font-headline font-bold text-sm tracking-tight text-[#EAFAF8]">{subtotal.toLocaleString("vi-VN")}đ</span>
+                <Price amount={subtotal} className="font-headline font-bold text-sm tracking-tight text-[#EAFAF8]" />
               </div>
               
               <div className="flex justify-between items-start">
                 <span className="text-on-surface-variant font-label text-[10px] uppercase tracking-widest font-black">Delivery Charge</span>
                 <div className="text-right">
                   <span className={`font-headline font-bold text-sm ${shippingDiscount > 0 || subtotal > 2000000 ? "text-[#6FF7E8]" : "text-[#EAFAF8]"}`}>
-                    {shippingFee > 0 ? `${shippingFee.toLocaleString("vi-VN")}đ` : "FREE"}
+                    {shippingFee > 0 ? <Price amount={shippingFee} /> : "FREE"}
                   </span>
-                  {shippingDiscount > 0 && <p className="text-[9px] text-[#6FF7E8]/40 font-black uppercase tracking-tighter mt-1 line-through opacity-50">30.000đ</p>}
+                  {shippingDiscount > 0 && <Price amount={30000} className="block text-[9px] text-[#6FF7E8]/40 font-black uppercase tracking-tighter mt-1 line-through opacity-50" />}
                 </div>
               </div>
 
@@ -249,13 +283,13 @@ export default function CheckoutPage() {
                   <span className="font-label text-[10px] uppercase tracking-widest flex items-center gap-2 font-black">
                     <span className="material-symbols-outlined text-sm">redeem</span> Rewards Applied
                   </span>
-                  <span className="font-headline font-bold text-sm">-{orderDiscount.toLocaleString("vi-VN")}đ</span>
+                  <Price amount={orderDiscount} negative className="font-headline font-bold text-sm" />
                 </div>
               )}
 
               <div className="flex justify-between items-end pt-6 mt-6 border-t border-white/5">
                 <span className="text-[10px] font-label font-bold text-on-surface-variant uppercase tracking-widest mb-1 font-black">Total Valuation</span>
-                <span className="font-headline font-black text-3xl text-gradient tracking-tighter leading-none">{totalPrice.toLocaleString("vi-VN")}đ</span>
+                <Price amount={totalPrice} className="font-headline font-black text-3xl text-gradient tracking-tighter leading-none" />
               </div>
             </div>
 
