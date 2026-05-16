@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getProducts } from "@/lib/products";
-import { AddToCartButton } from "@/components/product";
+import { AddToCartButton, ProductSearchForm } from "@/components/product";
 import { FilterSidebar } from "./FilterSidebar";
 import { Price } from "@/components/settings/Price";
 
@@ -14,8 +14,10 @@ export default async function ShopPage({
   const resolvedParams = await searchParams;
   const category = typeof resolvedParams.category === "string" ? resolvedParams.category : undefined;
   const maxPrice = typeof resolvedParams.maxPrice === "string" ? parseInt(resolvedParams.maxPrice) : undefined;
+  const search = typeof resolvedParams.search === "string" ? resolvedParams.search.trim() : undefined;
+  const hasSearch = Boolean(search);
 
-  const { data: products } = await getProducts({ category, maxPrice });
+  const { data: products } = await getProducts({ category, maxPrice, search });
 
   return (
     <div className="px-8 py-12 max-w-[1600px] mx-auto">
@@ -28,10 +30,23 @@ export default async function ShopPage({
         </nav>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <h1 className="text-6xl md:text-7xl font-headline font-extrabold tracking-tighter text-gradient">All Products</h1>
-            <p className="text-on-surface-variant mt-2 font-body">Showing {products.length} meticulously engineered artifacts</p>
+            <h1 className="text-6xl md:text-7xl font-headline font-extrabold tracking-tighter text-gradient">
+              {hasSearch ? "Search Results" : "All Products"}
+            </h1>
+            <p className="text-on-surface-variant mt-2 font-body">
+              {hasSearch
+                ? `Showing ${products.length} artifacts for "${search}"`
+                : `Showing ${products.length} meticulously engineered artifacts`}
+            </p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex w-full flex-col gap-4 sm:flex-row md:w-auto">
+            <Suspense fallback={<div className="h-12 w-full rounded-xl bg-white/5 md:w-80" />}>
+              <ProductSearchForm
+                className="relative w-full md:w-80"
+                inputClassName="w-full rounded-xl border border-[#6FF7E8]/20 bg-[#0a1f26]/50 py-3 pl-10 pr-10 text-sm text-[#EAFAF8] placeholder:text-[#EAFAF8]/30 outline-none transition-all focus:border-[#6FF7E8] focus:ring-1 focus:ring-[#6FF7E8]"
+                placeholder="Search product name..."
+              />
+            </Suspense>
             <button className="glass-card px-6 py-3 rounded-xl flex items-center gap-2 text-sm font-label uppercase tracking-widest hover:bg-white/10 transition-all">
               <span className="material-symbols-outlined text-primary-container">sort</span>
               Latest Arrivals
@@ -51,8 +66,10 @@ export default async function ShopPage({
           {products.length === 0 ? (
             <div className="h-64 flex flex-col items-center justify-center border-2 border-white/5 border-dashed rounded-3xl opacity-50">
                <span className="material-symbols-outlined text-4xl mb-2">inventory_2</span>
-               <p className="font-headline font-bold text-lg">No Artifacts Found</p>
-               <p className="text-xs text-on-surface-variant uppercase tracking-widest">Adjust your scan protocols</p>
+               <p className="font-headline font-bold text-lg">{hasSearch ? "No Matching Artifacts" : "No Artifacts Found"}</p>
+               <p className="text-xs text-on-surface-variant uppercase tracking-widest">
+                 {hasSearch ? "Try another product name" : "Adjust your scan protocols"}
+               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

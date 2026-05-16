@@ -48,6 +48,21 @@ export interface GetProductsOptions {
   limit?: number;
   category?: string;
   maxPrice?: number;
+  search?: string;
+}
+
+function normalizeProductSearch(search?: string) {
+  const trimmed = search?.trim().replace(/\s+/g, " ");
+
+  if (!trimmed) {
+    return null;
+  }
+
+  return trimmed
+    .replace(/[,%()\\_%]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80);
 }
 
 export async function getProducts(options?: GetProductsOptions): Promise<ProductQueryResult<Product[]>> {
@@ -72,12 +87,21 @@ export async function getProducts(options?: GetProductsOptions): Promise<Product
       .select(selectQuery)
       .order("created_at", { ascending: false });
 
+    const searchTerm = normalizeProductSearch(options?.search);
+
     if (options?.category) {
       query = query.eq("categories.slug", options.category);
     }
     
     if (options?.maxPrice !== undefined) {
       query = query.lte("price", options.maxPrice);
+    }
+
+    if (searchTerm) {
+      const searchPattern = `%${searchTerm}%`;
+      query = query.or(
+        `name.ilike.${searchPattern},description.ilike.${searchPattern},slug.ilike.${searchPattern}`
+      );
     }
 
     if (typeof options?.limit === "number") {

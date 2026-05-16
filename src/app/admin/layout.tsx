@@ -1,8 +1,10 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import { AdminTopSearch } from "@/components/admin/AdminTopSearch";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -70,10 +72,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
         
         <div className="flex items-center gap-4 md:gap-8 w-full md:w-auto">
-          <div className="relative flex items-center bg-surface-container-lowest border border-outline-variant/15 rounded-full px-4 py-2 w-full md:w-64 group focus-within:border-primary-container/40 transition-all">
-            <span className="material-symbols-outlined text-on-surface-variant/60 text-lg">search</span>
-            <input className="bg-transparent border-none focus:ring-0 text-sm text-on-surface placeholder:text-on-surface-variant/40 w-full ml-2 outline-none" placeholder="Scan records..." type="text"/>
-          </div>
+          <Suspense
+            fallback={
+              <div className="relative flex items-center bg-surface-container-lowest border border-outline-variant/15 rounded-full px-4 py-2 w-full md:w-64">
+                <span className="material-symbols-outlined text-on-surface-variant/60 text-lg">search</span>
+                <input className="bg-transparent border-none focus:ring-0 text-sm text-on-surface placeholder:text-on-surface-variant/40 w-full ml-2 outline-none" placeholder="Scan products..." type="text" disabled />
+              </div>
+            }
+          >
+            <AdminTopSearch />
+          </Suspense>
           <div className="flex items-center gap-2 md:gap-4">
             <button className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-variant transition-colors text-on-surface-variant relative">
               <span className="material-symbols-outlined">notifications</span>
