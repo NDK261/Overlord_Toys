@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useCart } from "@/hooks/useCart";
 import { products } from "@/lib/mock-data";
 import { vouchers } from "@/lib/vouchers";
+import { useAccountSettings } from "@/hooks/useAccountSettings";
+import { Price } from "@/components/settings/Price";
 
 export default function CartPage() {
   const { 
@@ -14,6 +16,7 @@ export default function CartPage() {
     totalPrice, appliedVouchers, applyPromoCode, removeVoucher,
     isFirstOrder
   } = useCart();
+  const { settings } = useAccountSettings();
   
   const [couponInput, setCouponInput] = useState("");
   const [error, setError] = useState("");
@@ -43,7 +46,7 @@ export default function CartPage() {
         <h1 className="text-5xl md:text-6xl font-headline font-extrabold tracking-tighter text-gradient uppercase">Vault Contents</h1>
         
         {/* PROMO BANNER */}
-        {items.length > 0 && (
+        {items.length > 0 && settings.notifications.promotions && (
           <div className="mt-8 relative group overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-[#6FF7E8]/20 to-transparent animate-pulse group-hover:from-[#6FF7E8]/30 transition-all"></div>
             <div className="relative border border-[#6FF7E8]/30 bg-[#0A1010] p-4 md:p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-[0_0_20px_rgba(111,247,232,0.05)]">
@@ -55,7 +58,7 @@ export default function CartPage() {
                   <h4 className="font-headline font-black text-sm uppercase tracking-wider text-[#EAFAF8]">System Broadcast: New Acquisition Detected</h4>
                   <p className="text-[10px] md:text-xs text-on-surface-variant/80 font-medium uppercase tracking-[0.1em] mt-1 leading-relaxed">
                     Apply code <span className="text-[#6FF7E8] font-black border-b border-[#6FF7E8]/40">FREESHIP</span> for <span className="text-white">Zero-Cost delivery</span> 
-                    {isFirstOrder ? " on your very first deployment (any value)." : " for deployments over 1,000,000đ."}
+                    {isFirstOrder ? " on your very first deployment (any value)." : <> for deployments over <Price amount={1000000} />.</>}
                   </p>
                 </div>
               </div>
@@ -111,8 +114,12 @@ export default function CartPage() {
                         <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="material-symbols-outlined text-sm text-on-surface-variant hover:text-primary transition-colors cursor-pointer">add</button>
                       </div>
                       <div className="text-right min-w-[120px]">
-                        <p className="text-lg font-headline font-bold text-primary-fixed">{(item.product.price * item.quantity).toLocaleString("vi-VN")}đ</p>
-                        {item.quantity > 1 && <p className="text-[10px] text-on-surface-variant uppercase tracking-tighter">{item.product.price.toLocaleString("vi-VN")}đ ea.</p>}
+                        <Price amount={item.product.price * item.quantity} className="text-lg font-headline font-bold text-primary-fixed" />
+                        {item.quantity > 1 && (
+                          <p className="text-[10px] text-on-surface-variant uppercase tracking-tighter">
+                            <Price amount={item.product.price} /> ea.
+                          </p>
+                        )}
                       </div>
                       <button onClick={() => removeFromCart(item.product.id)} className="material-symbols-outlined text-on-surface-variant/50 hover:text-error transition-colors p-2 cursor-pointer">delete</button>
                     </div>
@@ -187,11 +194,11 @@ export default function CartPage() {
                     {error && <p className="text-[9px] text-error font-bold tracking-tight uppercase px-1">{error}</p>}
                   </div>
 
-                  {/* Voucher List */}
-                  <div className="space-y-3">
-                    <p className="text-[10px] font-label font-bold text-on-surface-variant uppercase tracking-widest ml-1">Available Artifacts</p>
-                    <div className="flex flex-col gap-3">
-                      {vouchers.map(v => {
+                  {settings.notifications.promotions ? (
+                    <div className="space-y-3">
+                      <p className="text-[10px] font-label font-bold text-on-surface-variant uppercase tracking-widest ml-1">Available Artifacts</p>
+                      <div className="flex flex-col gap-3">
+                        {vouchers.map(v => {
                         const isApplied = appliedVouchers.freeship === v.code || appliedVouchers.discount === v.code;
                         const canApply = subtotal >= v.minOrder;
                         
@@ -216,7 +223,7 @@ export default function CartPage() {
                               </p>
                               {!canApply && !isApplied && (
                                 <p className="text-[8px] text-error/80 font-bold uppercase tracking-tighter mt-1">
-                                  Min: {v.minOrder.toLocaleString("vi-VN")}đ
+                                  Min: <Price amount={v.minOrder} />
                                 </p>
                               )}
                             </div>
@@ -233,9 +240,14 @@ export default function CartPage() {
                             </button>
                           </div>
                         );
-                      })}
+                        })}
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="rounded-lg border border-white/5 bg-white/[0.03] p-4 text-xs leading-relaxed text-on-surface-variant">
+                      Promotional suggestions are disabled in Settings. Manual promo codes still work.
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -248,17 +260,17 @@ export default function CartPage() {
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between items-center text-on-surface-variant">
                   <span className="font-label text-xs uppercase tracking-widest">Subtotal</span>
-                  <span className="font-headline font-bold text-sm text-[#EAFAF8]">{subtotal.toLocaleString("vi-VN")}đ</span>
+                  <Price amount={subtotal} className="font-headline font-bold text-sm text-[#EAFAF8]" />
                 </div>
                 
                 <div className="flex justify-between items-start">
                   <span className="text-on-surface-variant font-label text-xs uppercase tracking-widest">Vault Delivery</span>
                   <div className="text-right">
                     <span className={`font-headline font-bold text-sm ${shippingDiscount > 0 || subtotal > 2000000 ? "text-[#6FF7E8]" : "text-[#EAFAF8]"}`}>
-                      {shippingFee > 0 ? `${shippingFee.toLocaleString("vi-VN")}đ` : "FREE"}
+                      {shippingFee > 0 ? <Price amount={shippingFee} /> : "FREE"}
                     </span>
                     {shippingDiscount > 0 && (
-                      <p className="text-[9px] text-[#6FF7E8]/60 font-bold uppercase tracking-tighter mt-1 line-through opacity-50">30.000đ</p>
+                      <Price amount={30000} className="block text-[9px] text-[#6FF7E8]/60 font-bold uppercase tracking-tighter mt-1 line-through opacity-50" />
                     )}
                   </div>
                 </div>
@@ -268,7 +280,7 @@ export default function CartPage() {
                     <span className="font-label text-[10px] uppercase tracking-widest flex items-center gap-2 font-black">
                       <span className="material-symbols-outlined text-sm">redeem</span> Floor Discount
                     </span>
-                    <span className="font-headline font-bold text-sm">-{orderDiscount.toLocaleString("vi-VN")}đ</span>
+                    <Price amount={orderDiscount} negative className="font-headline font-bold text-sm" />
                   </div>
                 )}
               </div>
@@ -276,12 +288,12 @@ export default function CartPage() {
               <div className="border-t border-white/5 pt-6 mb-8">
                 <div className="flex justify-between items-end">
                   <span className="text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-1">Final Clearance</span>
-                  <span className="text-4xl font-headline font-black text-gradient tracking-tighter leading-none">{totalPrice.toLocaleString("vi-VN")}đ</span>
+                  <Price amount={totalPrice} className="text-4xl font-headline font-black text-gradient tracking-tighter leading-none" />
                 </div>
                 {(shippingDiscount > 0 || orderDiscount > 0) && (
                   <div className="mt-4 py-2 bg-[#6FF7E8]/5 rounded-lg text-center border border-[#6FF7E8]/10">
                     <p className="text-[10px] font-label font-bold text-[#6FF7E8] uppercase tracking-[0.2em] animate-pulse">
-                      Total Assets Saved: {(shippingDiscount + orderDiscount).toLocaleString("vi-VN")}đ
+                      Total Assets Saved: <Price amount={shippingDiscount + orderDiscount} />
                     </p>
                   </div>
                 )}
@@ -309,26 +321,27 @@ export default function CartPage() {
         </div>
       </div>
 
-      {/* RECENTLY VIEWED Section */}
-      <section className="mt-24 pt-12 border-t border-white/5">
-        <div className="flex items-end justify-between mb-8">
-          <h2 className="text-3xl font-headline font-bold text-on-surface tracking-tighter uppercase">Recently Viewed</h2>
-          <Link href="/shop" className="text-[#6FF7E8] hover:text-[#EAFAF8] font-label font-bold text-[10px] uppercase tracking-[0.2em] transition-all">View All Artifacts</Link>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {products.slice(0, 4).map(p => (
-            <Link href={`/product/${p.slug}`} key={p.id} className="glass-card p-4 group cursor-pointer hover:shadow-[0_0_20px_rgba(111,247,232,0.15)] transition-all block group">
-              <div className="h-56 rounded-xl overflow-hidden bg-surface-container-low mb-4 relative">
-                <Image src={p.thumbnail_url} alt={p.name} width={400} height={400} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              </div>
-              <span className="text-[9px] font-label font-bold text-[#6FF7E8] uppercase tracking-[0.3em] font-mono">Artifact #{String(p.id).substring(0,4)}</span>
-              <h3 className="font-headline font-bold text-on-surface group-hover:text-[#6FF7E8] transition-colors mt-1 line-clamp-1 text-sm">{p.name}</h3>
-              <p className="text-sm font-headline font-bold text-[#6FF7E8] mt-2">{p.price.toLocaleString("vi-VN")}đ</p>
-            </Link>
-          ))}
-        </div>
-      </section>
+      {settings.notifications.productRecommendations && (
+        <section className="mt-24 pt-12 border-t border-white/5">
+          <div className="flex items-end justify-between mb-8">
+            <h2 className="text-3xl font-headline font-bold text-on-surface tracking-tighter uppercase">Recently Viewed</h2>
+            <Link href="/shop" className="text-[#6FF7E8] hover:text-[#EAFAF8] font-label font-bold text-[10px] uppercase tracking-[0.2em] transition-all">View All Artifacts</Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {products.slice(0, 4).map(p => (
+              <Link href={`/product/${p.slug}`} key={p.id} className="glass-card p-4 group cursor-pointer hover:shadow-[0_0_20px_rgba(111,247,232,0.15)] transition-all block group">
+                <div className="h-56 rounded-xl overflow-hidden bg-surface-container-low mb-4 relative">
+                  <Image src={p.thumbnail_url} alt={p.name} width={400} height={400} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </div>
+                <span className="text-[9px] font-label font-bold text-[#6FF7E8] uppercase tracking-[0.3em] font-mono">Artifact #{String(p.id).substring(0,4)}</span>
+                <h3 className="font-headline font-bold text-on-surface group-hover:text-[#6FF7E8] transition-colors mt-1 line-clamp-1 text-sm">{p.name}</h3>
+                <Price amount={p.price} className="text-sm font-headline font-bold text-[#6FF7E8] mt-2" />
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

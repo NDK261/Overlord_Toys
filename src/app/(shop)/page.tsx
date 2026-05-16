@@ -3,6 +3,9 @@ import Link from "next/link";
 import { getProducts } from "@/lib/products";
 import { categories as mockCategories, flashDeals, testimonials } from "@/lib/mock-data";
 import { AddToCartButton } from "@/components/product";
+import { Price } from "@/components/settings/Price";
+
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const { data: allProducts } = await getProducts();
@@ -152,7 +155,7 @@ export default async function HomePage() {
                 </div>
                 <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-white truncate text-lg">{product.name}</h3>
                 <div className="flex items-center gap-3 mt-1">
-                  <span className="text-2xl font-black text-[#6FF7E8]">{product.price.toLocaleString()}đ</span>
+                  <Price amount={product.price} className="text-2xl font-black text-[#6FF7E8]" />
                 </div>
                 <div className="pt-2">
                   <AddToCartButton
@@ -194,8 +197,8 @@ export default async function HomePage() {
                   <span className="text-red-500 text-[10px] font-black tracking-widest uppercase bg-red-500/10 px-3 py-1 rounded-full">Limited Stock</span>
                   <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-xl text-white line-clamp-2 leading-tight">{deal.name}</h3>
                   <div className="flex items-center gap-3 mt-4">
-                    <span className="text-2xl font-black text-[#6FF7E8]">{(deal.price * 0.8).toLocaleString()}đ</span>
-                    <span className="text-sm text-white/20 line-through font-medium">{deal.price.toLocaleString()}đ</span>
+                    <Price amount={deal.price * 0.8} className="text-2xl font-black text-[#6FF7E8]" />
+                    <Price amount={deal.price} className="text-sm text-white/20 line-through font-medium" />
                   </div>
                 </div>
                 <AddToCartButton product={deal} className="bg-[#0a1f26] text-white hover:bg-red-500 hover:text-white py-3 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all w-full text-center mt-6 border border-white/5">

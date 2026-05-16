@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { getProducts } from "@/lib/products";
 import { AddToCartButton } from "@/components/product";
 import { FilterSidebar } from "./FilterSidebar";
+import { Price } from "@/components/settings/Price";
 
 export default async function ShopPage({
   searchParams,
@@ -83,7 +84,7 @@ export default async function ShopPage({
                     </Link>
                     <div className="mt-auto pt-4 flex items-end justify-between">
                       <div className="flex flex-col">
-                        <span className={`${i === 1 || i === 7 ? 'text-3xl' : 'text-2xl'} font-headline font-extrabold text-primary tracking-tighter`}>{p.price.toLocaleString("vi-VN")}đ</span>
+                        <Price amount={p.price} className={`${i === 1 || i === 7 ? 'text-3xl' : 'text-2xl'} font-headline font-extrabold text-primary tracking-tighter`} />
                       </div>
                       <AddToCartButton
                         ariaLabel={`Them ${p.name} vao gio hang`}

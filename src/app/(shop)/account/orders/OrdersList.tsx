@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { Price } from "@/components/settings/Price";
 
 interface OrdersListProps {
   initialOrders: any[];
@@ -79,7 +80,7 @@ export function OrdersList({ initialOrders, userEmail }: OrdersListProps) {
                   </div>
                   <div className="flex-grow">
                     <div className="text-white/30 font-label text-[9px] uppercase mb-1 tracking-widest">Total Credit</div>
-                    <div className="text-[#6FF7E8] font-black text-xl font-mono">{order.total_price.toLocaleString("vi-VN")}đ</div>
+                    <Price amount={order.total_price} className="text-[#6FF7E8] font-black text-xl font-mono" />
                   </div>
                   <div className="flex-shrink-0">
                     {order.status === 'paid' && <span className="px-3 py-1 rounded-full bg-[#6FF7E8]/10 text-[#6FF7E8] border border-[#6FF7E8]/20 text-[10px] font-black uppercase tracking-tighter shadow-[0_0_10px_rgba(111,247,232,0.1)]">Confirmed</span>}

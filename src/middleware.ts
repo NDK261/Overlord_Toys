@@ -44,6 +44,8 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getSession();
 
   const pathname = request.nextUrl.pathname;
+  const isAccountRoute = pathname.startsWith("/account");
+  const isProfileRoute = pathname === "/profile";
 
   // Bảo vệ route /admin/*
   if (pathname.startsWith("/admin")) {
@@ -66,7 +68,14 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Nếu đã đăng nhập mà vào /login hoặc /register → redirect về trang chủ
+  // Protect customer account routes before the client app renders.
+  if ((isAccountRoute || isProfileRoute) && !session) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Redirect signed-in users away from auth pages.
   if (session && (pathname === "/login" || pathname === "/register")) {
     return NextResponse.redirect(new URL("/", request.url));
   }
@@ -78,6 +87,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/admin/:path*", // Tất cả route /admin
+    "/account/:path*",
     "/login",
     "/register",
     "/profile",
