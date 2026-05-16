@@ -1,9 +1,11 @@
 "use client";
 
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { usePathname } from 'next/navigation';
 import CartLink from "@/components/layout/CartLink";
 import UserAuthSection from "@/components/layout/UserAuthSection";
+import { ProductSearchForm } from "@/components/product";
 
 export default function Header() {
   const pathname = usePathname();
@@ -90,10 +92,20 @@ export default function Header() {
         </nav>
       </div>
       <div className="flex items-center gap-6">
-        <div className="relative hidden lg:block">
-          <input className="bg-[#0a1f26]/50 border border-[#6FF7E8]/20 focus:ring-1 focus:ring-[#6FF7E8] focus:border-[#6FF7E8] rounded-xl pl-10 pr-4 py-2 w-64 text-sm transition-all text-[#EAFAF8] placeholder:text-[#EAFAF8]/30" placeholder="Search toys..." type="text"/>
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#6FF7E8]/40 text-lg">search</span>
-        </div>
+        <Suspense
+          fallback={
+            <div className="relative hidden lg:block">
+              <input className="bg-[#0a1f26]/50 border border-[#6FF7E8]/20 rounded-xl pl-10 pr-4 py-2 w-64 text-sm transition-all text-[#EAFAF8] placeholder:text-[#EAFAF8]/30" placeholder="Search toys..." type="text" disabled />
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#6FF7E8]/40 text-lg">search</span>
+            </div>
+          }
+        >
+          <ProductSearchForm
+            className="relative hidden lg:block"
+            inputClassName="bg-[#0a1f26]/50 border border-[#6FF7E8]/20 focus:ring-1 focus:ring-[#6FF7E8] focus:border-[#6FF7E8] rounded-xl pl-10 pr-10 py-2 w-64 text-sm transition-all text-[#EAFAF8] placeholder:text-[#EAFAF8]/30 outline-none"
+            placeholder="Search toys..."
+          />
+        </Suspense>
         <div className="flex items-center gap-4">
           <CartLink />
           <UserAuthSection />

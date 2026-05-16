@@ -1,11 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { deleteProduct } from "./actions";
 
 export default function AdminProductsPage() {
+  return (
+    <Suspense fallback={<ProductsLoading />}>
+      <AdminProductsContent />
+    </Suspense>
+  );
+}
+
+function ProductsLoading() {
+  return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <div className="w-8 h-8 border-4 border-[#6FF7E8]/20 border-t-[#6FF7E8] rounded-full animate-spin"></div>
+    </div>
+  );
+}
+
+function AdminProductsContent() {
+  const searchParams = useSearchParams();
+  const searchTerm = searchParams.get("q")?.trim() ?? "";
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +50,29 @@ export default function AdminProductsPage() {
     fetchProducts();
   }, []);
 
+  const visibleProducts = useMemo(() => {
+    const normalizedTerm = searchTerm.toLowerCase();
+
+    if (!normalizedTerm) {
+      return products;
+    }
+
+    return products.filter((product) => {
+      const searchableText = [
+        product.name,
+        product.slug,
+        product.description,
+        product.categories?.name,
+        product.id,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return searchableText.includes(normalizedTerm);
+    });
+  }, [products, searchTerm]);
+
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this asset?")) return;
 
@@ -42,11 +84,7 @@ export default function AdminProductsPage() {
     }
   };
 
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-[400px]">
-      <div className="w-8 h-8 border-4 border-[#6FF7E8]/20 border-t-[#6FF7E8] rounded-full animate-spin"></div>
-    </div>
-  );
+  if (loading) return <ProductsLoading />;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -61,7 +99,9 @@ export default function AdminProductsPage() {
             Asset <span className="text-stroke-cyan opacity-50">Database</span>
           </h1>
           <p className="text-on-surface-variant text-sm mt-3 max-w-xl font-medium leading-relaxed">
-            Manage your digital and physical artifacts. Add new items, update specifications, and monitor availability across the network.
+            {searchTerm
+              ? `Showing ${visibleProducts.length} product records for "${searchTerm}".`
+              : "Manage your digital and physical artifacts. Add new items, update specifications, and monitor availability across the network."}
           </p>
         </div>
         
@@ -96,8 +136,14 @@ export default function AdminProductsPage() {
                     No records found in current sector.
                   </td>
                 </tr>
+              ) : visibleProducts.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-on-surface-variant text-sm italic">
+                    {`No product records match "${searchTerm}".`}
+                  </td>
+                </tr>
               ) : (
-                products.map((product) => (
+                visibleProducts.map((product) => (
                   <tr key={product.id} className="group hover:bg-[#6FF7E8]/5 transition-all">
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-4">

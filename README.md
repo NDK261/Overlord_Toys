@@ -59,14 +59,15 @@ src/
 │
 ├── components/
 │    ├── ui/                            # Reusable UI components
+│    ├── admin/                         # AdminTopSearch cho trang quản trị sản phẩm
 │    ├── layout/                        # Navbar, Footer, layout wrappers
-│    ├── product/                       # ProductCard, ProductGallery, v.v.
+│    ├── product/                       # Product UI + ProductSearchForm
 │    └── settings/                      # Price + PreferenceGate dùng cho Account Settings
 │
 ├── lib/
 │    ├── supabaseClient.ts              # Supabase client (browser + server)
 │    ├── mock-data.ts                   # Dữ liệu mẫu ban đầu
-│    ├── products.ts                    # Services lấy dữ liệu sản phẩm
+│    ├── products.ts                    # Services lấy/lọc/tìm kiếm dữ liệu sản phẩm
 │    ├── payos.ts                       # PayOS integration logic
 │    ├── vnpay.ts                       # VNPay integration logic
 │    ├── account-settings.ts            # Account Settings: currency, notification, payment defaults
@@ -92,7 +93,7 @@ src/
 
 ### Flow A — Người dùng mua hàng
 ```
-Trang chủ → Xem sản phẩm → Thêm vào giỏ → Checkout
+Trang chủ → Search/Header hoặc Shop filter → Xem sản phẩm → Thêm vào giỏ → Checkout
 → Tạo Order trong Supabase → Redirect PayOS/VNPay
 → Webhook nhận callback → Update status = PAID
 → Gửi email xác nhận nếu user bật Order updates → Trang Success
@@ -101,7 +102,7 @@ Trang chủ → Xem sản phẩm → Thêm vào giỏ → Checkout
 ### Flow B — Admin quản lý
 ```
 Login → /admin (Middleware kiểm tra role) → Dashboard
-→ CRUD sản phẩm + Upload ảnh Supabase Storage
+→ Search sản phẩm trong admin → CRUD sản phẩm + Upload ảnh Supabase Storage
 → Xem đơn hàng → Cập nhật trạng thái
 ```
 
@@ -146,6 +147,32 @@ Trang Settings hiện có các nhóm chức năng:
 
 Settings được lưu ở browser `localStorage` theo từng user thông qua `useAccountSettings`.
 Điều này đủ tốt cho đồ án/demo. Nếu cần đồng bộ nhiều thiết bị, có thể mở rộng bằng cách lưu settings vào Supabase.
+
+---
+
+## 🔎 Product Search
+
+Project hiện có 3 thanh tìm kiếm sản phẩm đã hoạt động thật:
+
+| Vị trí | Route/query dùng | Lọc theo | Ghi chú |
+|-------|------------------|----------|--------|
+| **Header** `Search toys...` | `/shop?search=<keyword>` | `products.name`, `products.description`, `products.slug` | Đây là search global cho người dùng thường. Dù đang ở Home/Product/Cart, nhập từ khóa sẽ chuyển về trang Shop để hiển thị kết quả. |
+| **Shop page** `Search product name...` | `/shop?search=<keyword>` | `products.name`, `products.description`, `products.slug` | Search ngay trong `/shop`. Có thể kết hợp với filter category và max price, ví dụ `/shop?search=zoro&category=one-piece-figure&maxPrice=5000000`. |
+| **Admin** `Scan products...` | `/admin/products?q=<keyword>` | `name`, `slug`, `description`, `category name`, `product id` | Dành cho admin lọc danh sách sản phẩm để sửa/xóa/quản lý nhanh hơn. |
+
+Luồng hoạt động:
+```
+Người dùng nhập keyword
+→ Form cập nhật query trên URL
+→ /shop gọi getProducts({ search, category, maxPrice })
+→ Supabase lọc sản phẩm bằng ilike theo name/description/slug
+→ UI hiển thị Search Results hoặc No Matching Artifacts
+```
+
+Các component chính:
+- `ProductSearchForm`: dùng cho Header và trang Shop.
+- `AdminTopSearch`: dùng cho thanh search trong admin layout.
+- `getProducts`: nhận thêm option `search` để query Supabase.
 
 ---
 
@@ -228,7 +255,8 @@ npm run dev
 - [x] **Phase 1**: Khởi tạo project Next.js 15 + Tailwind 4.
 - [x] **Phase 2**: Thiết kế UI Mockup (Home, Shop, Cart, Login/Register).
 - [x] **Phase 3**: Kết nối Supabase (Products API, Auth logic). 
-- [x] **Phase 4**: Admin Dashboard (CRUD sản phẩm cơ bản).
+- [x] **Phase 4**: Admin Dashboard (CRUD sản phẩm cơ bản + search sản phẩm trong admin).
+- [x] **Product Search**: Header search, Shop search, Supabase search theo name/description/slug, admin product search theo name/slug/description/category/id.
 - [x] **Phase 5**: Account Settings hoàn chỉnh cho đồ án: notification preferences, currency VND/USD, default payment method, Resend order email theo `Order updates`.
 - [/] **Phase 6**: Tích hợp thanh toán thực tế (PayOS/VNPay) + email production. *(PayOS/COD: đã có luồng cơ bản. Resend: đã implement, cần API key/domain để gửi thật. VNPay: optional)*.
 - [ ] **Phase 7**: Optimization & SEO.
