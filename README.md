@@ -1,262 +1,232 @@
-# 🧸 Toy Store E-commerce
+# Overlord Toys - Toy Store E-commerce
 
-> Website bán đồ chơi trực tuyến — **Next.js 15 App Router + Supabase + PayOS/VNPay + Resend**
+Website bán đồ chơi và mô hình sưu tầm, xây bằng **Next.js 15 App Router + TypeScript + Tailwind CSS + Supabase + PayOS + Resend**.
 
----
+Project này đang tập trung vào hai nhóm chức năng chính:
 
-## 🚀 Tech Stack
-
-| Layer | Công nghệ |
-|-------|-----------|
-| **Frontend** | Next.js 15 (App Router), TypeScript |
-| **Styling** | Tailwind CSS 4, CSS Modules |
-| **Database** | Supabase PostgreSQL |
-| **Auth** | Supabase Auth (Email + OAuth) |
-| **Storage** | Supabase Storage (ảnh sản phẩm) |
-| **Payment** | PayOS (ưu tiên), VNPay (optional) |
-| **Email** | Resend |
-| **Analytics** | Google Analytics 4, Vercel Analytics |
-| **Deployment** | Vercel |
+- **Product Search**: tìm kiếm sản phẩm song ngữ Anh/Việt, có gợi ý sản phẩm khi người dùng đang nhập.
+- **Account Settings**: cài đặt tài khoản, thông báo, phương thức thanh toán mặc định, ngôn ngữ giao diện và cách hiển thị tiền tệ.
 
 ---
 
-## 📁 Cấu trúc thư mục
+## Tech Stack
 
-```
+| Phần | Công nghệ |
+| --- | --- |
+| Frontend | Next.js 15 App Router, React, TypeScript |
+| Styling | Tailwind CSS 4 |
+| Database | Supabase PostgreSQL |
+| Auth | Supabase Auth |
+| Payment | PayOS, COD, VNPay optional |
+| Email | Resend |
+| Storage | Supabase Storage cho ảnh sản phẩm |
+
+---
+
+## Cấu trúc chính
+
+```txt
 src/
-├── app/
-│    ├── (shop)/                        # Route group: cửa hàng
-│    │     ├── page.tsx                 # / → Trang chủ
-│    │     ├── products/                # /products → Danh sách sản phẩm (v2)
-│    │     ├── product/                 # /product/[slug] → Chi tiết sản phẩm (v2)
-│    │     ├── shop/                    # /shop → Trang cửa hàng chính (có Filter)
-│    │     ├── cart/                    # /cart → Giỏ hàng
-│    │     ├── checkout/                # /checkout → Thanh toán
-│    │     ├── account/                 # /account → Hồ sơ, đơn hàng, settings
-│    │     ├── about/                   # /about → Giới thiệu
-│    │     └── success/                 # /success → Thanh toán thành công
-│    │
-│    ├── (auth)/                        # Route group: xác thực
-│    │     ├── login/                   # /login
-│    │     ├── register/                # /register
-│    │     ├── forgot-password/         # /forgot-password
-│    │     └── profile/                 # /profile (v1)
-│    │
-│    ├── admin/                         # Quản trị (protected)
-│    │     ├── page.tsx                 # /admin → Dashboard
-│    │     ├── products/                # /admin/products → CRUD sản phẩm
-│    │     └── orders/                  # /admin/orders → Quản lý đơn hàng
-│    │
-│    ├── api/
-│    │     ├── checkout/route.ts        # POST /api/checkout
-│    │     ├── webhook/payos/route.ts   # POST /api/webhook/payos
-│    │     ├── webhook/vnpay/route.ts   # POST/GET /api/webhook/vnpay
-│    │     ├── resend/route.ts          # POST /api/resend
-│    │     └── test-supabase/           # API test kết nối DB
-│    │
-│    ├── layout.tsx                     # Root layout
-│    └── globals.css                    # Tailwind + custom styles
-│
-├── components/
-│    ├── ui/                            # Reusable UI components
-│    ├── admin/                         # AdminTopSearch cho trang quản trị sản phẩm
-│    ├── layout/                        # Navbar, Footer, layout wrappers
-│    ├── product/                       # Product UI + ProductSearchForm
-│    └── settings/                      # Price + PreferenceGate dùng cho Account Settings
-│
-├── lib/
-│    ├── supabaseClient.ts              # Supabase client (browser + server)
-│    ├── mock-data.ts                   # Dữ liệu mẫu ban đầu
-│    ├── products.ts                    # Services lấy/lọc/tìm kiếm dữ liệu sản phẩm
-│    ├── payos.ts                       # PayOS integration logic
-│    ├── vnpay.ts                       # VNPay integration logic
-│    ├── account-settings.ts            # Account Settings: currency, notification, payment defaults
-│    ├── resend.ts                      # Email service integration
-│    └── utils.ts                       # Helpers: formatPrice, toSlug, v.v.
-│
-├── hooks/
-│    ├── useCart.ts                     # Quản lý giỏ hàng (localStorage)
-│    ├── useUser.ts                     # Quản lý auth state
-│    └── useAccountSettings.ts          # Đọc/ghi account settings theo từng user
-│
-├── types/
-│    ├── product.ts                     # Type definitions cho sản phẩm
-│    ├── order.ts                       # Type definitions cho đơn hàng
-│    └── user.ts                        # Type definitions cho người dùng
-│
-└── middleware.ts                       # Bảo vệ /admin/*, /account/* và /profile bằng Supabase Auth
+  app/
+    (shop)/
+      page.tsx                 Trang chủ
+      shop/                    Trang danh sách sản phẩm, filter, search
+      product/[slug]/          Trang chi tiết sản phẩm
+      cart/                    Giỏ hàng
+      checkout/                Thanh toán
+      success/                 Kết quả đặt hàng
+      about/                   Giới thiệu
+      account/                 Hồ sơ, đơn hàng, cài đặt
+    api/
+      checkout/route.ts        Tạo đơn hàng và payment link
+      products/suggestions/    API gợi ý sản phẩm cho search dropdown
+      resend/route.ts          Test gửi email
+  components/
+    product/                   Search, gallery, nút mua hàng
+    settings/                  Price, LocalizedText, PreferenceGate
+    layout/                    Header, Footer, user menu
+  hooks/
+    useAccountSettings.ts      Đọc/ghi settings theo từng user
+    useCart.ts                 Giỏ hàng localStorage
+    useUser.ts                 Auth/profile helper
+  lib/
+    account-settings.ts        Kiểu dữ liệu settings, format tiền, migrate setting cũ
+    search.ts                  Chuẩn hóa và mở rộng keyword Anh/Việt
+    products.ts                Query sản phẩm và áp dụng search/filter
 ```
 
 ---
 
-## 🔄 System Flow
+## Account Settings
 
-### Flow A — Người dùng mua hàng
-```
-Trang chủ → Search/Header hoặc Shop filter → Xem sản phẩm → Thêm vào giỏ → Checkout
-→ Tạo Order trong Supabase → Redirect PayOS/VNPay
-→ Webhook nhận callback → Update status = PAID
-→ Gửi email xác nhận nếu user bật Order updates → Trang Success
-```
+Route chính: `/account/settings`.
 
-### Flow B — Admin quản lý
-```
-Login → /admin (Middleware kiểm tra role) → Dashboard
-→ Search sản phẩm trong admin → CRUD sản phẩm + Upload ảnh Supabase Storage
-→ Xem đơn hàng → Cập nhật trạng thái
+Settings được lưu trong `localStorage` theo từng user bằng key dạng:
+
+```txt
+account_settings:<userId>
 ```
 
-### Flow C — Người dùng cấu hình Settings
+Nếu chưa đăng nhập hoặc chưa có user id thì dùng key `account_settings:guest`.
+
+### Các nhóm setting
+
+| Nhóm | Setting | Tác dụng |
+| --- | --- | --- |
+| Notifications | Order updates | Khi bật, checkout gửi email xác nhận/cập nhật đơn hàng qua Resend. Khi tắt, đơn vẫn tạo bình thường nhưng bỏ qua email. |
+| Notifications | Promotions | Khi bật, giỏ hàng hiển thị banner khuyến mãi và gợi ý voucher. Khi tắt, phần gợi ý khuyến mãi bị ẩn. |
+| Notifications | Product recommendations | Khi bật, cart/product hiển thị khu vực gợi ý sản phẩm. Khi tắt, các khu vực này bị ẩn. |
+| Shopping | Display language | Đổi giao diện giữa English và Tiếng Việt. |
+| Shopping | Default payment method | Checkout tự chọn sẵn PayOS hoặc COD theo lựa chọn của user. |
+
+### Đổi ngôn ngữ và tiền tệ
+
+Setting ngôn ngữ hiện được dùng rộng hơn trước. Khi đổi sang **Tiếng Việt**, các phần giao diện khách hàng đã được dịch gồm:
+
+- Header, menu tài khoản, footer.
+- Trang chủ.
+- Trang shop, tiêu đề shop, filter, badge, trạng thái tồn kho.
+- Thanh tìm kiếm và dropdown gợi ý sản phẩm.
+- Trang chi tiết sản phẩm, nút mua hàng, mô tả khu vực kỹ thuật.
+- Cart, voucher, tổng tiền, khuyến mãi.
+- Checkout, thông tin giao hàng, thanh toán, manifest đơn hàng.
+- Success page sau khi đặt hàng.
+- Account sidebar, hồ sơ, đổi mật khẩu, đơn hàng, settings.
+- About page.
+
+Tên sản phẩm và tên danh mục lấy từ database/mock data nên được giữ nguyên, vì đây là dữ liệu thật của sản phẩm. Ví dụ sản phẩm tên `One Piece Cursed Devil Fruit...` sẽ không bị tự dịch.
+
+Giá sản phẩm vẫn **lưu bằng VND** trong database và trong logic thanh toán. Chỉ phần hiển thị đổi theo ngôn ngữ:
+
+```txt
+Tiếng Việt -> 2.700.000 VND
+English    -> $108.00
 ```
-Login → /account/settings
-→ Bật/tắt Order updates, Promotions, Product recommendations
-→ Chọn Currency (VND/USD) + Default payment method (PayOS/COD)
-→ Save preferences vào localStorage theo user
-→ Cart/Shop/Product/Checkout/Orders đọc settings và thay đổi UI/logic tương ứng
+
+Tỷ giá demo nằm trong `src/lib/account-settings.ts`:
+
+```ts
+export const VND_TO_USD_RATE = 25000;
 ```
+
+Điều này giúp giao diện giống website thật hơn, nhưng không làm sai dữ liệu thanh toán vì PayOS/order API vẫn dùng giá gốc VND.
 
 ---
 
-## 🔌 API Endpoints
+## Product Search
 
-| Method | Endpoint | Chức năng |
-|--------|----------|-----------|
-| `POST` | `/api/checkout` | Tạo order + PayOS/VNPay payment link |
-| `POST` | `/api/webhook/payos` | PayOS webhook → update order PAID |
-| `POST` | `/api/webhook/vnpay` | VNPay IPN → update order PAID |
-| `GET`  | `/api/webhook/vnpay` | VNPay return URL → redirect |
-| `POST` | `/api/resend` | Gửi email xác nhận đơn hàng |
-| `GET`  | `/api/test-supabase`| Kiểm tra kết nối database |
+Project có các thanh tìm kiếm chính:
 
----
+| Vị trí | Query dùng | Ghi chú |
+| --- | --- | --- |
+| Header search | `/shop?search=<keyword>` | Tìm từ mọi trang và chuyển về shop. |
+| Shop search | `/shop?search=<keyword>` | Tìm ngay trong trang shop, kết hợp được với category/maxPrice. |
+| Admin search | `/admin/products?q=<keyword>` | Lọc sản phẩm trong trang quản trị. |
 
-## ⚙️ Account Settings
+Search đã được nâng cấp để gần giống website bán hàng thực tế:
 
-Route chính: `/account/settings` (được bảo vệ bởi middleware, yêu cầu đăng nhập).
+- Có dropdown gợi ý sản phẩm khi người dùng đang nhập.
+- Gợi ý gồm ảnh, tên sản phẩm, danh mục và giá.
+- Hỗ trợ keyword tiếng Anh và tiếng Việt.
+- Bỏ dấu tiếng Việt khi so khớp, ví dụ `do choi` vẫn có thể khớp với `đồ chơi`.
+- Có nhóm từ đồng nghĩa Anh/Việt, ví dụ `toy/do choi`, `figure/mo hinh`, `lamp/den`, `car/xe`.
+- Header search và shop search không còn mở dropdown chồng lên nhau sau khi Enter, vì mỗi thanh chỉ mở suggestion khi input của chính nó đang focus.
 
-Trang Settings hiện có các nhóm chức năng:
+Luồng search:
 
-| Nhóm | Chức năng | Tác động thật trong app |
-|------|-----------|--------------------------|
-| **Notification Preferences** | `Order updates` | Khi bật, checkout gọi Resend gửi email xác nhận đơn hàng. Khi tắt, order vẫn tạo nhưng bỏ qua email. |
-| **Notification Preferences** | `Promotions` | Khi bật, cart hiển thị promo broadcast và voucher suggestions. Khi tắt, ẩn các gợi ý khuyến mãi. |
-| **Notification Preferences** | `Product recommendations` | Khi bật, cart/product hiển thị Recently Viewed và Recommended Archives. Khi tắt, ẩn các khu vực gợi ý. |
-| **Shopping Preferences** | `Currency` (`VND`/`USD`) | Giá ở home, shop, product, cart, checkout, orders và success tự đổi định dạng. USD dùng tỷ giá demo cố định `1 USD = 25,000 VND`. |
-| **Shopping Preferences** | `Default payment method` (`PayOS`/`COD`) | Checkout tự chọn sẵn phương thức thanh toán theo setting đã lưu. |
-| **Account Session** | `Sign out` | Đăng xuất khỏi Supabase session và refresh UI. |
-
-Settings được lưu ở browser `localStorage` theo từng user thông qua `useAccountSettings`.
-Điều này đủ tốt cho đồ án/demo. Nếu cần đồng bộ nhiều thiết bị, có thể mở rộng bằng cách lưu settings vào Supabase.
-
----
-
-## 🔎 Product Search
-
-Project hiện có 3 thanh tìm kiếm sản phẩm đã hoạt động thật:
-
-| Vị trí | Route/query dùng | Lọc theo | Ghi chú |
-|-------|------------------|----------|--------|
-| **Header** `Search toys...` | `/shop?search=<keyword>` | `products.name`, `products.description`, `products.slug` | Đây là search global cho người dùng thường. Dù đang ở Home/Product/Cart, nhập từ khóa sẽ chuyển về trang Shop để hiển thị kết quả. |
-| **Shop page** `Search product name...` | `/shop?search=<keyword>` | `products.name`, `products.description`, `products.slug` | Search ngay trong `/shop`. Có thể kết hợp với filter category và max price, ví dụ `/shop?search=zoro&category=one-piece-figure&maxPrice=5000000`. |
-| **Admin** `Scan products...` | `/admin/products?q=<keyword>` | `name`, `slug`, `description`, `category name`, `product id` | Dành cho admin lọc danh sách sản phẩm để sửa/xóa/quản lý nhanh hơn. |
-
-Luồng hoạt động:
-```
+```txt
 Người dùng nhập keyword
-→ Form cập nhật query trên URL
-→ /shop gọi getProducts({ search, category, maxPrice })
-→ Supabase lọc sản phẩm bằng ilike theo name/description/slug
-→ UI hiển thị Search Results hoặc No Matching Artifacts
+  -> ProductSearchForm/AdminTopSearch debounce khoảng 180ms
+  -> gọi GET /api/products/suggestions?search=<keyword>
+  -> API gọi getProducts({ search, limit: 6 })
+  -> getProducts lấy dữ liệu Supabase
+  -> productMatchesSearch() chuẩn hóa và so khớp keyword Anh/Việt
+  -> dropdown hiển thị tối đa 6 gợi ý
+  -> Enter hoặc "xem tất cả" cập nhật URL /shop?search=...
 ```
 
-Các component chính:
-- `ProductSearchForm`: dùng cho Header và trang Shop.
-- `AdminTopSearch`: dùng cho thanh search trong admin layout.
-- `getProducts`: nhận thêm option `search` để query Supabase.
+Các file quan trọng:
+
+- `src/lib/search.ts`: chuẩn hóa keyword, bỏ dấu, mở rộng nhóm từ Anh/Việt.
+- `src/lib/products.ts`: lấy sản phẩm, join category, áp dụng search/filter.
+- `src/app/api/products/suggestions/route.ts`: API trả gợi ý sản phẩm.
+- `src/components/product/ProductSearchForm.tsx`: search ở Header và Shop.
+- `src/components/admin/AdminTopSearch.tsx`: search trong Admin.
 
 ---
 
-## 🗄️ Database Schema (Supabase)
+## Checkout, Email Và Resend
 
-```sql
--- Danh mục sản phẩm
-categories (id, name, slug)
+Luồng mua hàng:
 
--- Sản phẩm
-products (id, name, slug, description, price, stock, category_id, thumbnail_url, created_at)
-
--- Ảnh sản phẩm
-product_images (id, product_id, url)
-
--- Đơn hàng
-orders (id, order_code, user_id, customer_name, customer_phone, customer_email, customer_address, 
-        total_price, shipping_fee, discount_amount, voucher_code, status, payment_method, payment_url, created_at)
-
--- Chi tiết đơn hàng
-order_items (id, order_id, product_id, quantity, price)
-
--- Hồ sơ người dùng
-profiles (id, full_name, role)   -- id mapping auth.users.id
+```txt
+Cart
+  -> Checkout
+  -> POST /api/checkout
+  -> tạo order trong Supabase
+  -> nếu PayOS thì tạo payment link
+  -> nếu COD thì đi thẳng success
+  -> nếu Order updates bật thì gửi email qua Resend
 ```
+
+Lưu ý Resend:
+
+- `RESEND_API_KEY` lấy trong Resend Dashboard.
+- `RESEND_FROM_EMAIL` có thể dùng `Overlord Toys <onboarding@resend.dev>` để test.
+- Với sender mặc định `onboarding@resend.dev`, Resend thường chỉ cho gửi tới email tài khoản test.
+- Muốn gửi tới email khách hàng bất kỳ, cần verify domain riêng trong Resend rồi đổi sender sang email thuộc domain đó.
 
 ---
 
-## ⚙️ Setup
+## Biến môi trường
 
-### 1. Clone và cài dependencies
+Tạo file `.env.local`:
 
-```bash
-git clone <repo>
-cd web_ecommerce_toys
-npm install
-```
-
-Các package chính đã có trong `package.json`, bao gồm `@payos/node`, `@supabase/ssr`, `@supabase/supabase-js` và `resend`.
-
-### 2. Cấu hình .env.local
-
-```bash
+```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-# Cấu hình thanh toán (nếu có)
-PAYOS_CLIENT_ID=...
-PAYOS_API_KEY=...
-PAYOS_CHECKSUM_KEY=...
-RESEND_API_KEY=...
-RESEND_FROM_EMAIL=Overlord Toys <onboarding@resend.dev>
+
+PAYOS_CLIENT_ID=your_payos_client_id
+PAYOS_API_KEY=your_payos_api_key
+PAYOS_CHECKSUM_KEY=your_payos_checksum_key
+
+RESEND_API_KEY=your_resend_api_key
+RESEND_FROM_EMAIL="Overlord Toys <onboarding@resend.dev>"
 ```
 
-Ghi chú Resend:
-- `RESEND_API_KEY` lấy trong Resend Dashboard → API Keys.
-- `RESEND_FROM_EMAIL` có thể dùng `Overlord Toys <onboarding@resend.dev>` để test.
-- Với sender mặc định `onboarding@resend.dev`, Resend thường chỉ cho gửi tới email tài khoản test. Muốn gửi tới mọi email khách hàng, cần verify domain trong Resend và đổi sender sang email domain riêng.
+---
 
-### 3. Chạy development server
+## Chạy project
 
 ```bash
+npm install
 npm run dev
-# → http://localhost:3000
+```
+
+Mở:
+
+```txt
+http://localhost:3000
+```
+
+Build kiểm tra:
+
+```bash
+npm run build
 ```
 
 ---
 
-## 🔐 Auth & Authorization
+## Trạng thái hiện tại
 
-- **Middleware** (`src/middleware.ts`) quản lý truy cập:
-  - `/admin/*` yêu cầu login và `role === "admin"`.
-  - `/profile` và `/account/*` yêu cầu login.
-- Login hỗ trợ `callbackUrl`, nên nếu user vào `/account/settings` khi chưa đăng nhập thì đăng nhập xong sẽ quay lại đúng trang Settings.
-- Supabase Auth được cấu hình với mode `ssr`.
-
----
-
-## 📦 Roadmap & Status
-
-- [x] **Phase 1**: Khởi tạo project Next.js 15 + Tailwind 4.
-- [x] **Phase 2**: Thiết kế UI Mockup (Home, Shop, Cart, Login/Register).
-- [x] **Phase 3**: Kết nối Supabase (Products API, Auth logic). 
-- [x] **Phase 4**: Admin Dashboard (CRUD sản phẩm cơ bản + search sản phẩm trong admin).
-- [x] **Product Search**: Header search, Shop search, Supabase search theo name/description/slug, admin product search theo name/slug/description/category/id.
-- [x] **Phase 5**: Account Settings hoàn chỉnh cho đồ án: notification preferences, currency VND/USD, default payment method, Resend order email theo `Order updates`.
-- [/] **Phase 6**: Tích hợp thanh toán thực tế (PayOS/VNPay) + email production. *(PayOS/COD: đã có luồng cơ bản. Resend: đã implement, cần API key/domain để gửi thật. VNPay: optional)*.
-- [ ] **Phase 7**: Optimization & SEO.
+- [x] Trang bán đồ chơi cơ bản.
+- [x] Supabase products/auth/orders.
+- [x] Cart, checkout, PayOS/COD flow.
+- [x] Resend order email có bật/tắt bằng `Order updates`.
+- [x] Product Search song ngữ Anh/Việt.
+- [x] Search suggestions giống website bán hàng thực tế.
+- [x] Sửa lỗi dropdown search bị mở chồng giữa Header và Shop.
+- [x] Account Settings đổi ngôn ngữ English/Tiếng Việt.
+- [x] Giá tiền hiển thị theo ngôn ngữ: English dùng USD, Tiếng Việt dùng VND.
+- [x] Dịch các trang khách hàng chính theo setting ngôn ngữ.
+- [ ] Đồng bộ settings lên database để dùng chung nhiều thiết bị.

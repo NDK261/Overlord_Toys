@@ -2,9 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getProducts } from "@/lib/products";
-import { AddToCartButton, ProductSearchForm } from "@/components/product";
+import { AddToCartButton } from "@/components/product";
 import { FilterSidebar } from "./FilterSidebar";
 import { Price } from "@/components/settings/Price";
+import {
+  ShopBadge,
+  ShopEmptyState,
+  ShopTitleSection,
+  SoldCount,
+} from "./ShopLocalized";
 
 export default async function ShopPage({
   searchParams,
@@ -21,39 +27,11 @@ export default async function ShopPage({
 
   return (
     <div className="px-8 py-12 max-w-[1600px] mx-auto">
-      {/* Title Section */}
-      <section className="mb-12">
-        <nav className="mb-4 text-xs font-label uppercase tracking-widest text-on-surface-variant flex items-center gap-2">
-          <Link className="hover:text-primary-fixed" href="/">Home</Link>
-          <span className="material-symbols-outlined text-[10px]">chevron_right</span>
-          <span className="text-primary-fixed">Shop</span>
-        </nav>
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div>
-            <h1 className="text-6xl md:text-7xl font-headline font-extrabold tracking-tighter text-gradient">
-              {hasSearch ? "Search Results" : "All Products"}
-            </h1>
-            <p className="text-on-surface-variant mt-2 font-body">
-              {hasSearch
-                ? `Showing ${products.length} artifacts for "${search}"`
-                : `Showing ${products.length} meticulously engineered artifacts`}
-            </p>
-          </div>
-          <div className="flex w-full flex-col gap-4 sm:flex-row md:w-auto">
-            <Suspense fallback={<div className="h-12 w-full rounded-xl bg-white/5 md:w-80" />}>
-              <ProductSearchForm
-                className="relative w-full md:w-80"
-                inputClassName="w-full rounded-xl border border-[#6FF7E8]/20 bg-[#0a1f26]/50 py-3 pl-10 pr-10 text-sm text-[#EAFAF8] placeholder:text-[#EAFAF8]/30 outline-none transition-all focus:border-[#6FF7E8] focus:ring-1 focus:ring-[#6FF7E8]"
-                placeholder="Search product name..."
-              />
-            </Suspense>
-            <button className="glass-card px-6 py-3 rounded-xl flex items-center gap-2 text-sm font-label uppercase tracking-widest hover:bg-white/10 transition-all">
-              <span className="material-symbols-outlined text-primary-container">sort</span>
-              Latest Arrivals
-            </button>
-          </div>
-        </div>
-      </section>
+      <ShopTitleSection
+        hasSearch={hasSearch}
+        productCount={products.length}
+        search={search}
+      />
 
       <div className="flex flex-col md:flex-row gap-12">
         {/* Sidebar */}
@@ -64,13 +42,7 @@ export default async function ShopPage({
         {/* Product Grid */}
         <div className="flex-1">
           {products.length === 0 ? (
-            <div className="h-64 flex flex-col items-center justify-center border-2 border-white/5 border-dashed rounded-3xl opacity-50">
-               <span className="material-symbols-outlined text-4xl mb-2">inventory_2</span>
-               <p className="font-headline font-bold text-lg">{hasSearch ? "No Matching Artifacts" : "No Artifacts Found"}</p>
-               <p className="text-xs text-on-surface-variant uppercase tracking-widest">
-                 {hasSearch ? "Try another product name" : "Adjust your scan protocols"}
-               </p>
-            </div>
+            <ShopEmptyState hasSearch={hasSearch} />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {products.map((p, i) => (
@@ -79,12 +51,12 @@ export default async function ShopPage({
                     <Image src={p.thumbnail_url} alt={p.name} width={800} height={800} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                     {i === 0 && (
                       <div className="absolute top-4 left-4">
-                        <span className="bg-primary-container text-on-primary text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">In Stock</span>
+                        <ShopBadge kind="inStock" />
                       </div>
                     )}
                     {i === 1 && (
                       <div className="absolute top-4 left-4">
-                        <span className="bg-primary-container text-on-primary text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">Collector's Choice</span>
+                        <ShopBadge kind="collectorsChoice" />
                       </div>
                     )}
                   </Link>
@@ -94,7 +66,7 @@ export default async function ShopPage({
                         <span className="material-symbols-outlined text-sm">star</span>
                         <span className="text-xs font-bold">4.9</span>
                       </div>
-                      <span className="text-[10px] text-on-surface-variant font-medium uppercase tracking-widest">{Math.floor(Math.random()*200)+10} Sold</span>
+                      <SoldCount count={Math.floor(Math.random()*200)+10} />
                     </div>
                     <Link href={`/product/${p.slug}`}>
                       <h3 className={`font-headline ${i === 1 || i === 7 ? 'text-2xl' : 'text-lg'} font-bold leading-tight mb-2 group-hover:text-primary-container transition-colors line-clamp-2`}>{p.name}</h3>

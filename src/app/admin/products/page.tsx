@@ -4,6 +4,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import { normalizeSearchText, productMatchesSearch } from "@/lib/search";
 import { deleteProduct } from "./actions";
 
 export default function AdminProductsPage() {
@@ -35,7 +36,7 @@ function AdminProductsContent() {
         .from("products")
         .select(`
           *,
-          categories (name)
+          categories (name, slug)
         `)
         .order("created_at", { ascending: false });
 
@@ -51,25 +52,31 @@ function AdminProductsContent() {
   }, []);
 
   const visibleProducts = useMemo(() => {
-    const normalizedTerm = searchTerm.toLowerCase();
-
-    if (!normalizedTerm) {
+    if (!searchTerm) {
       return products;
     }
 
     return products.filter((product) => {
-      const searchableText = [
-        product.name,
-        product.slug,
-        product.description,
-        product.categories?.name,
-        product.id,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
+      const matchesProductText = productMatchesSearch(
+        {
+          id: product.id,
+          name: product.name,
+          slug: product.slug,
+          description: product.description,
+          price: product.price,
+          thumbnail_url: product.thumbnail_url,
+          category: {
+            name: product.categories?.name,
+            slug: product.categories?.slug,
+          },
+        },
+        searchTerm
+      );
 
-      return searchableText.includes(normalizedTerm);
+      return (
+        matchesProductText ||
+        normalizeSearchText(product.id).includes(normalizeSearchText(searchTerm))
+      );
     });
   }, [products, searchTerm]);
 

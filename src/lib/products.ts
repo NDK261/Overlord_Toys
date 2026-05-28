@@ -1,5 +1,6 @@
 import { hasPublicSupabaseEnv } from "@/lib/supabase/client";
 import { createPublicServerSupabaseClient } from "@/lib/supabase/server";
+import { productMatchesSearch } from "@/lib/search";
 import type { Product } from "@/types/product";
 
 interface ProductQueryResult<T> {
@@ -15,23 +16,47 @@ type ProductImage = {
   display_order: number;
 };
 
-type ProductRow = Pick<
-  Product,
-  "id" | "name" | "slug" | "description" | "price" | "stock" | "category_id" | "thumbnail_url" | "created_at"
-> & {
-  product_images?: ProductImage[];
+type CategoryRelation = {
+  name: string;
+  slug: string;
 };
 
-const productSelect =
-  "id, name, slug, description, price, stock, category_id, thumbnail_url, created_at, product_images(id, product_id, url, display_order)";
+type ProductRow = Pick<
+  Product,
+  | "id"
+  | "name"
+  | "slug"
+  | "description"
+  | "price"
+  | "stock"
+  | "category_id"
+  | "thumbnail_url"
+  | "created_at"
+> & {
+  product_images?: ProductImage[];
+  categories?: CategoryRelation | null;
+};
 
-// Transform ProductRow to Product with images sorted by display_order
+const baseProductSelect =
+  "id, name, slug, description, price, stock, category_id, thumbnail_url, created_at, product_images(id, product_id, url, display_order)";
+const productSelect = `${baseProductSelect}, categories(name, slug)`;
+const productSelectWithCategoryFilter = `${baseProductSelect}, categories!inner(name, slug)`;
+
 function transformProductRow(row: ProductRow): Product {
-  const images = (row.product_images || [])
-    .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
-  
+  const { product_images, categories, ...product } = row;
+  const images = (product_images || []).sort(
+    (a, b) => (a.display_order ?? 0) - (b.display_order ?? 0)
+  );
+
   return {
-    ...row,
+    ...product,
+    category: categories
+      ? {
+          id: product.category_id,
+          name: categories.name,
+          slug: categories.slug,
+        }
+      : undefined,
     images,
   } as Product;
 }
@@ -65,7 +90,9 @@ function normalizeProductSearch(search?: string) {
     .slice(0, 80);
 }
 
-export async function getProducts(options?: GetProductsOptions): Promise<ProductQueryResult<Product[]>> {
+export async function getProducts(
+  options?: GetProductsOptions
+): Promise<ProductQueryResult<Product[]>> {
   if (!hasPublicSupabaseEnv()) {
     return {
       data: [],
@@ -76,12 +103,10 @@ export async function getProducts(options?: GetProductsOptions): Promise<Product
 
   try {
     const supabase = createPublicServerSupabaseClient();
-    
-    // Nếu có lọc theo category, ta cần join bảng categories.
-    const selectQuery = options?.category 
-      ? `${productSelect}, categories!inner(slug)` 
+    const selectQuery = options?.category
+      ? productSelectWithCategoryFilter
       : productSelect;
-      
+
     let query = supabase
       .from("products")
       .select(selectQuery)
@@ -92,19 +117,12 @@ export async function getProducts(options?: GetProductsOptions): Promise<Product
     if (options?.category) {
       query = query.eq("categories.slug", options.category);
     }
-    
+
     if (options?.maxPrice !== undefined) {
       query = query.lte("price", options.maxPrice);
     }
 
-    if (searchTerm) {
-      const searchPattern = `%${searchTerm}%`;
-      query = query.or(
-        `name.ilike.${searchPattern},description.ilike.${searchPattern},slug.ilike.${searchPattern}`
-      );
-    }
-
-    if (typeof options?.limit === "number") {
+    if (!searchTerm && typeof options?.limit === "number") {
       query = query.limit(options.limit);
     }
 
@@ -120,8 +138,16 @@ export async function getProducts(options?: GetProductsOptions): Promise<Product
       };
     }
 
+    const products = (data ?? []).map(transformProductRow);
+    const filteredProducts = searchTerm
+      ? products.filter((product) => productMatchesSearch(product, searchTerm))
+      : products;
+
     return {
-      data: (data ?? []).map(transformProductRow),
+      data:
+        searchTerm && typeof options?.limit === "number"
+          ? filteredProducts.slice(0, options.limit)
+          : filteredProducts,
       error: null,
       needsSetup: false,
     };

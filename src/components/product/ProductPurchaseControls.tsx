@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/hooks/useCart";
 import type { Product } from "@/types/product";
 import { Price } from "@/components/settings/Price";
+import { useAccountSettings } from "@/hooks/useAccountSettings";
 
 interface ProductPurchaseControlsProps {
   product: Product;
@@ -13,7 +14,9 @@ interface ProductPurchaseControlsProps {
 export default function ProductPurchaseControls({ product }: ProductPurchaseControlsProps) {
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
+  const { settings } = useAccountSettings();
   const router = useRouter();
+  const isVi = settings.shopping.language === "vi";
 
   const decrease = () => {
     setQuantity((prev) => Math.max(1, prev - 1));
@@ -44,19 +47,24 @@ export default function ProductPurchaseControls({ product }: ProductPurchaseCont
             <span className="material-symbols-outlined text-[18px]">add</span>
           </button>
         </div>
-        <div className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest opacity-50">Quantity</div>
+        <div className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest opacity-50">
+          {isVi ? "Số lượng" : "Quantity"}
+        </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <button className="bg-gradient-primary text-on-primary font-bold py-4 rounded-2xl shadow-[0_10px_20px_-10px_rgba(31,126,161,0.5)] hover:opacity-90 active:scale-95 transition-all w-full text-sm uppercase tracking-wider" onClick={handleAddToCart} type="button">
-          Add to Cart
+          {isVi ? "Thêm vào giỏ" : "Add to Cart"}
         </button>
         <button className="glass-card border-outline-variant text-on-surface font-bold py-4 rounded-2xl hover:bg-white/5 active:scale-95 transition-all w-full text-center block text-sm uppercase tracking-wider" onClick={handleBuyNow} type="button">
-          Buy Now
+          {isVi ? "Mua ngay" : "Buy Now"}
         </button>
       </div>
       <div className="flex items-center gap-2 text-sm text-[#6FF7E8]">
         <span className="material-symbols-outlined text-lg">rocket_launch</span>
-        <span className="font-medium">Free shipping for orders over <Price amount={500000} /></span>
+        <span className="font-medium">
+          {isVi ? "Miễn phí vận chuyển cho đơn từ " : "Free shipping for orders over "}
+          <Price amount={500000} />
+        </span>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { getProducts } from "@/lib/products";
 import { categories as mockCategories, flashDeals, testimonials } from "@/lib/mock-data";
 import { AddToCartButton } from "@/components/product";
 import { Price } from "@/components/settings/Price";
+import { LocalizedText } from "@/components/settings/LocalizedText";
 
 export const dynamic = "force-dynamic";
 
@@ -45,21 +46,31 @@ export default async function HomePage() {
         <div className="relative z-10 grid lg:grid-cols-2 gap-12 items-center w-full">
           <div className="space-y-8 animate-in fade-in slide-in-from-left duration-700">
             <div className="glass-card inline-block px-4 py-1.5 rounded-full border-[#6FF7E8]/20">
-              <span className="text-[#6FF7E8] text-xs font-bold tracking-widest uppercase">Now Available: Series X Artifacts</span>
+              <LocalizedText
+                as="span"
+                className="text-[#6FF7E8] text-xs font-bold tracking-widest uppercase"
+                en="Now Available: Series X Artifacts"
+                vi="Đã mở bán: bộ sưu tập Series X"
+              />
             </div>
             <h1 className="text-6xl md:text-8xl font-['Plus_Jakarta_Sans'] font-bold leading-tight tracking-tighter text-white">
-              Level Up Your <br />
-              <span className="text-gradient">Toy Collection.</span>
+              <LocalizedText en="Level Up Your" vi="Nâng cấp bộ sưu tập" /> <br />
+              <span className="text-gradient">
+                <LocalizedText en="Toy Collection." vi="đồ chơi của bạn." />
+              </span>
             </h1>
-            <p className="text-xl text-white/60 max-w-lg leading-relaxed font-medium">
-              Premium figures, building sets & limited edition collectibles engineered for the modern curator.
-            </p>
+            <LocalizedText
+              as="p"
+              className="text-xl text-white/60 max-w-lg leading-relaxed font-medium"
+              en="Premium figures, building sets & limited edition collectibles engineered for the modern curator."
+              vi="Mô hình cao cấp, bộ lắp ráp và đồ sưu tầm giới hạn dành cho người yêu đồ chơi hiện đại."
+            />
             <div className="flex flex-wrap gap-4 pt-4">
               <Link href="/shop" className="bg-gradient-primary text-[#003732] font-bold px-10 py-5 rounded-2xl shadow-lg shadow-[#6FF7E8]/20 transition-all hover:scale-105 active:scale-95 text-sm uppercase tracking-wider">
-                Shop The Drop
+                <LocalizedText en="Shop The Drop" vi="Mua ngay" />
               </Link>
               <Link href="/shop" className="glass-card text-white font-bold px-10 py-5 rounded-2xl border-white/10 hover:bg-white/5 transition-all text-sm uppercase tracking-wider">
-                View Best Sellers
+                <LocalizedText en="View Best Sellers" vi="Xem bán chạy" />
               </Link>
             </div>
           </div>
@@ -79,9 +90,19 @@ export default async function HomePage() {
                   </div>
                 </div>
                 <div className="absolute -bottom-10 -left-10 glass-card p-8 rounded-3xl w-72 backdrop-blur-3xl z-30 shadow-2xl border-white/10">
-                  <p className="text-xs text-[#6FF7E8] font-black mb-2 tracking-[0.2em] uppercase">Limited Edition</p>
+                  <LocalizedText
+                    as="p"
+                    className="text-xs text-[#6FF7E8] font-black mb-2 tracking-[0.2em] uppercase"
+                    en="Limited Edition"
+                    vi="Phiên bản giới hạn"
+                  />
                   <p className="font-['Plus_Jakarta_Sans'] font-bold text-white text-lg">{heroProduct.name}</p>
-                  <p className="text-sm text-white/50 mt-1 font-medium italic">Collector&apos;s Edition Artifact</p>
+                  <LocalizedText
+                    as="p"
+                    className="text-sm text-white/50 mt-1 font-medium italic"
+                    en="Collector's Edition Artifact"
+                    vi="Sản phẩm dành cho nhà sưu tầm"
+                  />
                 </div>
               </div>
             )}
@@ -93,11 +114,21 @@ export default async function HomePage() {
       <section className="py-32 px-8 md:px-20 space-y-12">
         <div className="flex items-end justify-between">
           <div className="space-y-2">
-            <h2 className="text-4xl font-['Plus_Jakarta_Sans'] font-bold text-gradient uppercase tracking-tight">Shop by Category</h2>
-            <p className="text-white/40 font-medium">Navigate the vaults of imagination</p>
+            <LocalizedText
+              as="h2"
+              className="text-4xl font-['Plus_Jakarta_Sans'] font-bold text-gradient uppercase tracking-tight"
+              en="Shop by Category"
+              vi="Mua theo danh mục"
+            />
+            <LocalizedText
+              as="p"
+              className="text-white/40 font-medium"
+              en="Navigate the vaults of imagination"
+              vi="Khám phá các nhóm sản phẩm trong cửa hàng"
+            />
           </div>
           <Link href="/shop" className="text-[#6FF7E8] font-bold flex items-center gap-2 hover:underline group">
-            Explore All <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            <LocalizedText en="Explore All" vi="Xem tất cả" /> <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
           </Link>
         </div>
 
@@ -116,7 +147,12 @@ export default async function HomePage() {
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-2xl font-['Plus_Jakarta_Sans'] font-bold text-white">{c.name}</h3>
-                    <p className="text-sm text-white/40 font-medium">Explore the collection</p>
+                    <LocalizedText
+                      as="p"
+                      className="text-sm text-white/40 font-medium"
+                      en="Explore the collection"
+                      vi="Xem bộ sưu tập"
+                    />
                   </div>
                 </div>
               </Link>
@@ -128,8 +164,18 @@ export default async function HomePage() {
       {/* --- SECTION 03: BEST SELLERS --- */}
       <section className="py-32 bg-[#0a1f26] px-8 md:px-20 space-y-16">
         <div className="text-center space-y-4 max-w-2xl mx-auto">
-          <h2 className="text-5xl font-['Plus_Jakarta_Sans'] font-bold text-gradient">Best Sellers</h2>
-          <p className="text-white/40 font-medium uppercase tracking-[0.3em] text-xs">Artifacts most desired by the collective</p>
+          <LocalizedText
+            as="h2"
+            className="text-5xl font-['Plus_Jakarta_Sans'] font-bold text-gradient"
+            en="Best Sellers"
+            vi="Sản phẩm bán chạy"
+          />
+          <LocalizedText
+            as="p"
+            className="text-white/40 font-medium uppercase tracking-[0.3em] text-xs"
+            en="Artifacts most desired by the collective"
+            vi="Những món đồ được yêu thích nhất"
+          />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
@@ -151,7 +197,12 @@ export default async function HomePage() {
                       <span key={i} className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                     ))}
                   </div>
-                  <span className="text-[10px] text-white/30 font-bold uppercase tracking-widest">In Stock</span>
+                  <LocalizedText
+                    as="span"
+                    className="text-[10px] text-white/30 font-bold uppercase tracking-widest"
+                    en="In Stock"
+                    vi="Còn hàng"
+                  />
                 </div>
                 <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-white truncate text-lg">{product.name}</h3>
                 <div className="flex items-center gap-3 mt-1">
@@ -163,7 +214,7 @@ export default async function HomePage() {
                     className="w-full bg-gradient-primary text-[#003732] py-4 rounded-xl text-xs font-black uppercase tracking-widest hover:brightness-110 transition-all active:scale-[0.98] shadow-lg shadow-[#6FF7E8]/10"
                     ariaLabel={`Add ${product.name} to cart`}
                   >
-                    Add To Cart
+                    <LocalizedText en="Add To Cart" vi="Thêm vào giỏ" />
                   </AddToCartButton>
                 </div>
               </div>
@@ -177,13 +228,16 @@ export default async function HomePage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
           <div className="flex flex-col md:flex-row md:items-center gap-6">
             <h2 className="text-4xl font-['Plus_Jakarta_Sans'] font-bold text-white flex items-center gap-3">
-              Flash Deals <span className="text-3xl">🔥</span>
+              <LocalizedText en="Flash Deals" vi="Ưu đãi nhanh" />
+              <span className="material-symbols-outlined text-3xl text-red-400">local_fire_department</span>
             </h2>
             <div className="flex items-center gap-2">
               <div className="bg-red-500/10 text-red-500 border border-red-500/20 px-4 py-2 rounded-xl font-mono font-black text-xl">02:45:18</div>
             </div>
           </div>
-          <Link href="/shop" className="glass-card px-8 py-3 rounded-full text-xs font-black uppercase tracking-[0.2em] text-white hover:bg-white/5 transition-all border-white/10">View All Deals</Link>
+          <Link href="/shop" className="glass-card px-8 py-3 rounded-full text-xs font-black uppercase tracking-[0.2em] text-white hover:bg-white/5 transition-all border-white/10">
+            <LocalizedText en="View All Deals" vi="Xem mọi ưu đãi" />
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
@@ -194,7 +248,12 @@ export default async function HomePage() {
               </div>
               <div className="flex flex-col justify-between py-2 flex-1">
                 <div className="space-y-2">
-                  <span className="text-red-500 text-[10px] font-black tracking-widest uppercase bg-red-500/10 px-3 py-1 rounded-full">Limited Stock</span>
+                  <LocalizedText
+                    as="span"
+                    className="text-red-500 text-[10px] font-black tracking-widest uppercase bg-red-500/10 px-3 py-1 rounded-full"
+                    en="Limited Stock"
+                    vi="Số lượng ít"
+                  />
                   <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-xl text-white line-clamp-2 leading-tight">{deal.name}</h3>
                   <div className="flex items-center gap-3 mt-4">
                     <Price amount={deal.price * 0.8} className="text-2xl font-black text-[#6FF7E8]" />
@@ -202,7 +261,7 @@ export default async function HomePage() {
                   </div>
                 </div>
                 <AddToCartButton product={deal} className="bg-[#0a1f26] text-white hover:bg-red-500 hover:text-white py-3 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all w-full text-center mt-6 border border-white/5">
-                  Claim Deal
+                  <LocalizedText en="Claim Deal" vi="Nhận ưu đãi" />
                 </AddToCartButton>
               </div>
             </div>
@@ -213,18 +272,28 @@ export default async function HomePage() {
       {/* --- SECTION 05: MANIFESTO / FEATURES --- */}
       <section className="py-32 bg-white/[0.01] px-8 md:px-20 grid grid-cols-1 md:grid-cols-4 gap-12 border-y border-white/5">
         {[
-          { icon: "verified", title: "100% Authentic", desc: "Every artifact is certified of quality." },
-          { icon: "speed", title: "Fast Shipping", desc: "Dispatch within 24h globally." },
-          { icon: "keyboard_return", title: "Easy Returns", desc: "30-day hassle-free policy." },
-          { icon: "lock", title: "Secure Payment", desc: "Encrypted transaction protocol." }
+          { icon: "verified", enTitle: "100% Authentic", viTitle: "100% chính hãng", enDesc: "Every artifact is certified of quality.", viDesc: "Mỗi sản phẩm đều được kiểm tra chất lượng." },
+          { icon: "speed", enTitle: "Fast Shipping", viTitle: "Giao hàng nhanh", enDesc: "Dispatch within 24h globally.", viDesc: "Xử lý đơn trong vòng 24 giờ." },
+          { icon: "keyboard_return", enTitle: "Easy Returns", viTitle: "Đổi trả dễ dàng", enDesc: "30-day hassle-free policy.", viDesc: "Chính sách hỗ trợ đổi trả trong 30 ngày." },
+          { icon: "lock", enTitle: "Secure Payment", viTitle: "Thanh toán an toàn", enDesc: "Encrypted transaction protocol.", viDesc: "Quy trình thanh toán được bảo vệ." }
         ].map((feat, i) => (
           <div key={i} className="text-center space-y-6">
             <div className="w-20 h-20 mx-auto rounded-full bg-[#6FF7E8]/5 flex items-center justify-center border border-[#6FF7E8]/20 shadow-[0_0_20px_rgba(111,247,232,0.05)]">
               <span className="material-symbols-outlined text-[#6FF7E8] text-4xl">{feat.icon}</span>
             </div>
             <div className="space-y-2">
-              <h4 className="font-['Plus_Jakarta_Sans'] font-bold text-white text-lg">{feat.title}</h4>
-              <p className="text-sm text-white/40 font-medium leading-relaxed">{feat.desc}</p>
+              <LocalizedText
+                as="h4"
+                className="font-['Plus_Jakarta_Sans'] font-bold text-white text-lg"
+                en={feat.enTitle}
+                vi={feat.viTitle}
+              />
+              <LocalizedText
+                as="p"
+                className="text-sm text-white/40 font-medium leading-relaxed"
+                en={feat.enDesc}
+                vi={feat.viDesc}
+              />
             </div>
           </div>
         ))}
@@ -235,24 +304,39 @@ export default async function HomePage() {
         <div className="bg-gradient-primary rounded-[3rem] p-16 md:p-32 relative overflow-hidden flex flex-col lg:row items-center justify-between gap-20 shadow-2xl shadow-[#6FF7E8]/20">
           <div className="absolute inset-0 bg-black/20 z-0 opacity-40"></div>
           <div className="relative z-10 max-w-2xl text-center lg:text-left space-y-6">
-            <h2 className="text-5xl md:text-7xl font-['Plus_Jakarta_Sans'] font-black text-[#003732] tracking-tighter leading-[0.9]">Stay in the Loop</h2>
-            <p className="text-[#003732]/70 text-xl font-medium leading-relaxed max-w-lg">Get exclusive deals, early access to new drops, and join a community of world-class curators.</p>
+            <LocalizedText
+              as="h2"
+              className="text-5xl md:text-7xl font-['Plus_Jakarta_Sans'] font-black text-[#003732] tracking-tighter leading-[0.9]"
+              en="Stay in the Loop"
+              vi="Nhận tin mới"
+            />
+            <LocalizedText
+              as="p"
+              className="text-[#003732]/70 text-xl font-medium leading-relaxed max-w-lg"
+              en="Get exclusive deals, early access to new drops, and join a community of world-class curators."
+              vi="Nhận ưu đãi riêng, xem sản phẩm mới sớm hơn và tham gia cộng đồng sưu tầm của Overlord Toys."
+            />
           </div>
           <div className="relative z-10 w-full max-w-md">
             <form className="flex flex-col gap-4">
               <input
                 className="bg-white/10 backdrop-blur-xl border-white/20 text-[#003732] placeholder:text-[#003732]/40 rounded-2xl px-10 py-6 w-full focus:ring-4 focus:ring-[#003732]/20 outline-none transition-all font-bold text-lg"
-                placeholder="Enter your email address"
+                placeholder="Enter your email address / Nhập email của bạn"
                 type="email"
               />
               <button
                 className="bg-[#003732] text-[#6FF7E8] px-12 py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-sm hover:brightness-110 transition-all active:scale-95 flex items-center justify-center gap-2"
                 type="submit"
               >
-                Subscribe Now <span className="material-symbols-outlined text-lg">edit</span>
+                <LocalizedText en="Subscribe Now" vi="Đăng ký nhận tin" /> <span className="material-symbols-outlined text-lg">edit</span>
               </button>
             </form>
-            <p className="text-[10px] text-[#003732]/50 mt-6 text-center uppercase font-black tracking-widest">Zero Spam Policy. Encrypted Transmission.</p>
+            <LocalizedText
+              as="p"
+              className="text-[10px] text-[#003732]/50 mt-6 text-center uppercase font-black tracking-widest"
+              en="Zero Spam Policy. Encrypted Transmission."
+              vi="Không spam. Thông tin được bảo vệ."
+            />
           </div>
         </div>
       </section>

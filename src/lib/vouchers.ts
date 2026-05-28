@@ -15,7 +15,7 @@ export const vouchers: Voucher[] = [
     id: "v1",
     code: "FREESHIP",
     name: "Miễn phí vận chuyển",
-    description: "Miễn phí cho đơn đầu, đơn từ 1tr hoặc khi nhập mã này",
+    description: "Miễn phí cho đơn đầu, đơn từ 1 triệu hoặc khi nhập mã này",
     type: "freeship",
     rewardType: "fixed",
     rewardValue: 30000,
@@ -38,7 +38,7 @@ export const vouchers: Voucher[] = [
     description: "Giảm 10% cho tất cả đơn hàng",
     type: "discount",
     rewardType: "percentage",
-    rewardValue: 10, // 10%
+    rewardValue: 10,
     minOrder: 0,
   },
   {
@@ -50,5 +50,5 @@ export const vouchers: Voucher[] = [
     rewardType: "fixed",
     rewardValue: 200000,
     minOrder: 2000000,
-  }
+  },
 ];
