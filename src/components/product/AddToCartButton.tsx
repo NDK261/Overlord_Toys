@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { useCart } from "@/hooks/useCart";
+import { useAccountSettings } from "@/hooks/useAccountSettings";
 import type { Product } from "@/types/product";
 
 interface AddToCartButtonProps {
@@ -24,6 +25,7 @@ export default function AddToCartButton({
   ariaLabel,
 }: AddToCartButtonProps) {
   const { addToCart } = useCart();
+  const { settings } = useAccountSettings();
   const [added, setAdded] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -57,7 +59,13 @@ export default function AddToCartButton({
     <button aria-label={ariaLabel} className={className} onClick={handleClick} type="button">
       {iconName ? <span className="material-symbols-outlined">{iconName}</span> : null}
       {children}
-      {added ? <span className="sr-only">Da them vao gio hang</span> : null}
+      {added ? (
+        <span className="sr-only">
+          {settings.shopping.language === "vi"
+            ? "Đã thêm vào giỏ hàng"
+            : "Added to cart"}
+        </span>
+      ) : null}
     </button>
   );
 }

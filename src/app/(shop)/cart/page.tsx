@@ -9,6 +9,93 @@ import { vouchers } from "@/lib/vouchers";
 import { useAccountSettings } from "@/hooks/useAccountSettings";
 import { Price } from "@/components/settings/Price";
 
+const CART_COPY = {
+  en: {
+    home: "Home",
+    cart: "Cart",
+    title: "Vault Contents",
+    promoTitle: "System Broadcast: New Acquisition Detected",
+    promoStart: "Apply code",
+    promoFreeShip: "for Zero-Cost delivery",
+    promoFirstOrder: "on your very first deployment (any value).",
+    promoMinOrder: "for deployments over",
+    claimReward: "Claim Reward",
+    emptyTitle: "Your cart is empty",
+    emptyDesc: "Looks like you haven't added any artifacts to your cart yet.",
+    explore: "Explore Vault",
+    each: "ea.",
+    clear: "Purge Vault",
+    returnShop: "Return to Shop",
+    rewards: "Rewards & Coupons",
+    applied: "Applied",
+    selectCodes: "Select or enter codes",
+    manual: "Manual Cipher",
+    promoPlaceholder: "Enter Promo Code...",
+    submit: "Submit",
+    available: "Available Artifacts",
+    min: "Min:",
+    remove: "Remove",
+    apply: "Apply",
+    promoDisabled:
+      "Promotional suggestions are disabled in Settings. Manual promo codes still work.",
+    receipt: "Order Receipt",
+    subtotal: "Subtotal",
+    delivery: "Vault Delivery",
+    free: "FREE",
+    discount: "Floor Discount",
+    final: "Final Clearance",
+    saved: "Total Assets Saved:",
+    checkout: "Initiate Checkout",
+    checkoutOffline: "Checkout Offline",
+    secure: "Encrypted Delivery Protocols Active",
+    recentlyViewed: "Recently Viewed",
+    viewAll: "View All Artifacts",
+    artifact: "Artifact",
+  },
+  vi: {
+    home: "Trang chủ",
+    cart: "Giỏ hàng",
+    title: "Giỏ hàng của bạn",
+    promoTitle: "Thông báo ưu đãi mới",
+    promoStart: "Nhập mã",
+    promoFreeShip: "để được miễn phí giao hàng",
+    promoFirstOrder: "cho đơn hàng đầu tiên, không giới hạn giá trị.",
+    promoMinOrder: "cho đơn hàng từ",
+    claimReward: "Nhận ưu đãi",
+    emptyTitle: "Giỏ hàng đang trống",
+    emptyDesc: "Bạn chưa thêm sản phẩm nào vào giỏ hàng.",
+    explore: "Mua sắm ngay",
+    each: "mỗi món",
+    clear: "Xóa giỏ hàng",
+    returnShop: "Quay lại cửa hàng",
+    rewards: "Mã ưu đãi",
+    applied: "đã áp dụng",
+    selectCodes: "Chọn hoặc nhập mã",
+    manual: "Nhập mã thủ công",
+    promoPlaceholder: "Nhập mã khuyến mãi...",
+    submit: "Áp dụng",
+    available: "Mã có thể dùng",
+    min: "Tối thiểu:",
+    remove: "Gỡ",
+    apply: "Áp dụng",
+    promoDisabled:
+      "Gợi ý khuyến mãi đang tắt trong Cài đặt. Bạn vẫn có thể nhập mã thủ công.",
+    receipt: "Tóm tắt đơn hàng",
+    subtotal: "Tạm tính",
+    delivery: "Phí vận chuyển",
+    free: "Miễn phí",
+    discount: "Giảm giá",
+    final: "Tổng thanh toán",
+    saved: "Bạn đã tiết kiệm:",
+    checkout: "Thanh toán",
+    checkoutOffline: "Chưa thể thanh toán",
+    secure: "Thông tin giao hàng được bảo vệ",
+    recentlyViewed: "Sản phẩm đã xem gần đây",
+    viewAll: "Xem tất cả",
+    artifact: "Sản phẩm",
+  },
+};
+
 export default function CartPage() {
   const { 
     items, removeFromCart, updateQuantity, clearCart, 
@@ -17,6 +104,7 @@ export default function CartPage() {
     isFirstOrder
   } = useCart();
   const { settings } = useAccountSettings();
+  const copy = CART_COPY[settings.shopping.language];
   
   const [couponInput, setCouponInput] = useState("");
   const [error, setError] = useState("");
@@ -39,11 +127,11 @@ export default function CartPage() {
       {/* Editorial Header */}
       <div className="mb-12">
         <nav className="flex text-xs uppercase tracking-widest text-on-surface-variant mb-4 gap-2 font-medium">
-          <Link className="hover:text-primary transition-colors" href="/">Home</Link>
+          <Link className="hover:text-primary transition-colors" href="/">{copy.home}</Link>
           <span>&gt;</span>
-          <span className="text-primary-fixed-dim">Cart</span>
+          <span className="text-primary-fixed-dim">{copy.cart}</span>
         </nav>
-        <h1 className="text-5xl md:text-6xl font-headline font-extrabold tracking-tighter text-gradient uppercase">Vault Contents</h1>
+        <h1 className="text-5xl md:text-6xl font-headline font-extrabold tracking-tighter text-gradient uppercase">{copy.title}</h1>
         
         {/* PROMO BANNER */}
         {items.length > 0 && settings.notifications.promotions && (
@@ -55,10 +143,10 @@ export default function CartPage() {
                   <span className="material-symbols-outlined text-3xl font-bold">campaign</span>
                 </div>
                 <div>
-                  <h4 className="font-headline font-black text-sm uppercase tracking-wider text-[#EAFAF8]">System Broadcast: New Acquisition Detected</h4>
+                  <h4 className="font-headline font-black text-sm uppercase tracking-wider text-[#EAFAF8]">{copy.promoTitle}</h4>
                   <p className="text-[10px] md:text-xs text-on-surface-variant/80 font-medium uppercase tracking-[0.1em] mt-1 leading-relaxed">
-                    Apply code <span className="text-[#6FF7E8] font-black border-b border-[#6FF7E8]/40">FREESHIP</span> for <span className="text-white">Zero-Cost delivery</span> 
-                    {isFirstOrder ? " on your very first deployment (any value)." : <> for deployments over <Price amount={1000000} />.</>}
+                    {copy.promoStart} <span className="text-[#6FF7E8] font-black border-b border-[#6FF7E8]/40">FREESHIP</span> <span className="text-white">{copy.promoFreeShip}</span>{" "}
+                    {isFirstOrder ? copy.promoFirstOrder : <>{copy.promoMinOrder} <Price amount={1000000} />.</>}
                   </p>
                 </div>
               </div>
@@ -73,7 +161,7 @@ export default function CartPage() {
                 }}
                 className="whitespace-nowrap px-6 py-2 rounded-lg bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-[#EAFAF8] hover:bg-[#6FF7E8] hover:text-[#003732] hover:border-[#6FF7E8] transition-all active:scale-95"
               >
-                Claim Reward
+                {copy.claimReward}
               </button>
             </div>
           </div>
@@ -88,10 +176,10 @@ export default function CartPage() {
               {items.length === 0 ? (
                 <div className="text-center py-12">
                   <span className="material-symbols-outlined text-6xl text-on-surface-variant/30 mb-4 block">shopping_cart</span>
-                  <h3 className="text-xl font-headline font-bold text-on-surface mb-2">Your cart is empty</h3>
-                  <p className="text-on-surface-variant mb-6">Looks like you haven't added any artifacts to your cart yet.</p>
+                  <h3 className="text-xl font-headline font-bold text-on-surface mb-2">{copy.emptyTitle}</h3>
+                  <p className="text-on-surface-variant mb-6">{copy.emptyDesc}</p>
                   <Link href="/shop" className="bg-gradient-primary text-[#003732] px-8 py-3 rounded-xl font-headline font-bold tracking-widest uppercase hover:brightness-110 transition-all inline-block">
-                    Explore Vault
+                    {copy.explore}
                   </Link>
                 </div>
               ) : (
@@ -117,7 +205,7 @@ export default function CartPage() {
                         <Price amount={item.product.price * item.quantity} className="text-lg font-headline font-bold text-primary-fixed" />
                         {item.quantity > 1 && (
                           <p className="text-[10px] text-on-surface-variant uppercase tracking-tighter">
-                            <Price amount={item.product.price} /> ea.
+                            <Price amount={item.product.price} /> {copy.each}
                           </p>
                         )}
                       </div>
@@ -133,10 +221,10 @@ export default function CartPage() {
             <div className="flex flex-wrap items-center justify-between gap-4">
               <button onClick={clearCart} className="group flex items-center gap-2 text-on-surface-variant hover:text-error transition-colors font-label font-bold text-sm uppercase tracking-widest cursor-pointer">
                 <span className="material-symbols-outlined text-lg">delete_sweep</span>
-                Purge Vault
+                {copy.clear}
               </button>
               <Link href="/shop" className="px-8 py-3 rounded-xl border border-outline-variant/50 hover:border-[#6FF7E8] text-on-surface hover:text-[#6FF7E8] transition-all font-label font-bold text-sm uppercase tracking-widest active:scale-95 inline-block text-center glass-card">
-                Return to Shop
+                {copy.returnShop}
               </Link>
             </div>
           )}
@@ -158,11 +246,11 @@ export default function CartPage() {
                     <span className="material-symbols-outlined text-xl">confirmation_number</span>
                   </div>
                   <div className="text-left">
-                    <h3 className="font-headline font-bold uppercase tracking-widest text-[10px] text-[#EAFAF8]">Rewards & Coupons</h3>
+                    <h3 className="font-headline font-bold uppercase tracking-widest text-[10px] text-[#EAFAF8]">{copy.rewards}</h3>
                     {appliedCount > 0 ? (
-                      <p className="text-[9px] text-[#6FF7E8] font-black uppercase tracking-tight">{appliedCount} Applied</p>
+                      <p className="text-[9px] text-[#6FF7E8] font-black uppercase tracking-tight">{appliedCount} {copy.applied}</p>
                     ) : (
-                      <p className="text-[9px] text-on-surface-variant font-bold uppercase tracking-tight">Select or enter codes</p>
+                      <p className="text-[9px] text-on-surface-variant font-bold uppercase tracking-tight">{copy.selectCodes}</p>
                     )}
                   </div>
                 </div>
@@ -176,19 +264,19 @@ export default function CartPage() {
                 <div className="p-6 space-y-6">
                   {/* Manual Input */}
                   <div className="space-y-3">
-                    <p className="text-[10px] font-label font-bold text-on-surface-variant uppercase tracking-widest ml-1">Manual Cipher</p>
+                    <p className="text-[10px] font-label font-bold text-on-surface-variant uppercase tracking-widest ml-1">{copy.manual}</p>
                     <div className="relative group overflow-hidden rounded-xl border border-white/10 hover:border-[#6FF7E8]/50 transition-all">
                       <input 
                         value={couponInput}
                         onChange={(e) => setCouponInput(e.target.value)}
                         className="w-full bg-surface-container-highest/30 px-4 py-3 text-xs outline-none pr-20" 
-                        placeholder="Enter Promo Code..." 
+                        placeholder={copy.promoPlaceholder}
                       />
                       <button 
                         onClick={() => handleApplyCoupon()}
                         className="absolute right-0 top-0 bottom-0 bg-[#6FF7E8] text-[#003732] text-[10px] font-black uppercase tracking-widest px-4 hover:brightness-110 active:scale-95 transition-all"
                       >
-                        Submit
+                        {copy.submit}
                       </button>
                     </div>
                     {error && <p className="text-[9px] text-error font-bold tracking-tight uppercase px-1">{error}</p>}
@@ -196,7 +284,7 @@ export default function CartPage() {
 
                   {settings.notifications.promotions ? (
                     <div className="space-y-3">
-                      <p className="text-[10px] font-label font-bold text-on-surface-variant uppercase tracking-widest ml-1">Available Artifacts</p>
+                      <p className="text-[10px] font-label font-bold text-on-surface-variant uppercase tracking-widest ml-1">{copy.available}</p>
                       <div className="flex flex-col gap-3">
                         {vouchers.map(v => {
                         const isApplied = appliedVouchers.freeship === v.code || appliedVouchers.discount === v.code;
@@ -223,7 +311,7 @@ export default function CartPage() {
                               </p>
                               {!canApply && !isApplied && (
                                 <p className="text-[8px] text-error/80 font-bold uppercase tracking-tighter mt-1">
-                                  Min: <Price amount={v.minOrder} />
+                                  {copy.min} <Price amount={v.minOrder} />
                                 </p>
                               )}
                             </div>
@@ -236,7 +324,7 @@ export default function CartPage() {
                                   : "bg-white/5 text-on-surface hover:bg-[#6FF7E8] hover:text-[#003732] disabled:opacity-20 disabled:cursor-not-allowed"
                               }`}
                             >
-                              {isApplied ? "Remove" : "Apply"}
+                              {isApplied ? copy.remove : copy.apply}
                             </button>
                           </div>
                         );
@@ -245,7 +333,7 @@ export default function CartPage() {
                     </div>
                   ) : (
                     <div className="rounded-lg border border-white/5 bg-white/[0.03] p-4 text-xs leading-relaxed text-on-surface-variant">
-                      Promotional suggestions are disabled in Settings. Manual promo codes still work.
+                      {copy.promoDisabled}
                     </div>
                   )}
                 </div>
@@ -256,18 +344,18 @@ export default function CartPage() {
           {/* ORDER RECEIPT SECTION */}
           <div className="glass-card border border-white/5 shadow-2xl">
             <div className="p-8">
-              <h2 className="text-xl font-headline font-bold text-on-surface mb-8 tracking-tight uppercase border-b border-white/5 pb-4">Order Receipt</h2>
+              <h2 className="text-xl font-headline font-bold text-on-surface mb-8 tracking-tight uppercase border-b border-white/5 pb-4">{copy.receipt}</h2>
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between items-center text-on-surface-variant">
-                  <span className="font-label text-xs uppercase tracking-widest">Subtotal</span>
+                  <span className="font-label text-xs uppercase tracking-widest">{copy.subtotal}</span>
                   <Price amount={subtotal} className="font-headline font-bold text-sm text-[#EAFAF8]" />
                 </div>
                 
                 <div className="flex justify-between items-start">
-                  <span className="text-on-surface-variant font-label text-xs uppercase tracking-widest">Vault Delivery</span>
+                  <span className="text-on-surface-variant font-label text-xs uppercase tracking-widest">{copy.delivery}</span>
                   <div className="text-right">
                     <span className={`font-headline font-bold text-sm ${shippingDiscount > 0 || subtotal > 2000000 ? "text-[#6FF7E8]" : "text-[#EAFAF8]"}`}>
-                      {shippingFee > 0 ? <Price amount={shippingFee} /> : "FREE"}
+                      {shippingFee > 0 ? <Price amount={shippingFee} /> : copy.free}
                     </span>
                     {shippingDiscount > 0 && (
                       <Price amount={30000} className="block text-[9px] text-[#6FF7E8]/60 font-bold uppercase tracking-tighter mt-1 line-through opacity-50" />
@@ -278,7 +366,7 @@ export default function CartPage() {
                 {orderDiscount > 0 && (
                   <div className="flex justify-between items-center text-[#6FF7E8] bg-[#6FF7E8]/5 p-3 rounded-xl border border-[#6FF7E8]/20">
                     <span className="font-label text-[10px] uppercase tracking-widest flex items-center gap-2 font-black">
-                      <span className="material-symbols-outlined text-sm">redeem</span> Floor Discount
+                      <span className="material-symbols-outlined text-sm">redeem</span> {copy.discount}
                     </span>
                     <Price amount={orderDiscount} negative className="font-headline font-bold text-sm" />
                   </div>
@@ -287,13 +375,13 @@ export default function CartPage() {
               
               <div className="border-t border-white/5 pt-6 mb-8">
                 <div className="flex justify-between items-end">
-                  <span className="text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-1">Final Clearance</span>
+                  <span className="text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-1">{copy.final}</span>
                   <Price amount={totalPrice} className="text-4xl font-headline font-black text-gradient tracking-tighter leading-none" />
                 </div>
                 {(shippingDiscount > 0 || orderDiscount > 0) && (
                   <div className="mt-4 py-2 bg-[#6FF7E8]/5 rounded-lg text-center border border-[#6FF7E8]/10">
                     <p className="text-[10px] font-label font-bold text-[#6FF7E8] uppercase tracking-[0.2em] animate-pulse">
-                      Total Assets Saved: <Price amount={shippingDiscount + orderDiscount} />
+                      {copy.saved} <Price amount={shippingDiscount + orderDiscount} />
                     </p>
                   </div>
                 )}
@@ -301,19 +389,19 @@ export default function CartPage() {
 
               {items.length > 0 ? (
                 <Link href="/checkout" className="w-full py-5 rounded-2xl bg-gradient-primary text-[#003732] font-headline font-black text-lg uppercase tracking-widest hover:brightness-110 hover:shadow-[0_0_30px_rgba(111,247,232,0.3)] active:scale-[0.98] transition-all mb-6 flex items-center justify-center gap-3">
-                  Initiate Checkout
+                  {copy.checkout}
                   <span className="material-symbols-outlined">bolt</span>
                 </Link>
               ) : (
                 <button disabled className="w-full py-5 rounded-2xl bg-surface-container-highest text-on-surface-variant font-headline font-bold text-lg uppercase tracking-widest mb-6 flex items-center justify-center gap-3 cursor-not-allowed opacity-50">
-                  Checkout Offline
+                  {copy.checkoutOffline}
                 </button>
               )}
               
               <div className="space-y-4">
                 <div className="flex items-center gap-3 text-[10px] text-on-surface-variant/60 bg-white/5 p-3 rounded-xl border border-white/5 uppercase tracking-widest justify-center">
                   <span className="material-symbols-outlined text-sm text-[#6FF7E8]">policy</span>
-                  <p>Encrypted Delivery Protocols Active</p>
+                  <p>{copy.secure}</p>
                 </div>
               </div>
             </div>
@@ -324,8 +412,8 @@ export default function CartPage() {
       {settings.notifications.productRecommendations && (
         <section className="mt-24 pt-12 border-t border-white/5">
           <div className="flex items-end justify-between mb-8">
-            <h2 className="text-3xl font-headline font-bold text-on-surface tracking-tighter uppercase">Recently Viewed</h2>
-            <Link href="/shop" className="text-[#6FF7E8] hover:text-[#EAFAF8] font-label font-bold text-[10px] uppercase tracking-[0.2em] transition-all">View All Artifacts</Link>
+            <h2 className="text-3xl font-headline font-bold text-on-surface tracking-tighter uppercase">{copy.recentlyViewed}</h2>
+            <Link href="/shop" className="text-[#6FF7E8] hover:text-[#EAFAF8] font-label font-bold text-[10px] uppercase tracking-[0.2em] transition-all">{copy.viewAll}</Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {products.slice(0, 4).map(p => (
@@ -334,7 +422,7 @@ export default function CartPage() {
                   <Image src={p.thumbnail_url} alt={p.name} width={400} height={400} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </div>
-                <span className="text-[9px] font-label font-bold text-[#6FF7E8] uppercase tracking-[0.3em] font-mono">Artifact #{String(p.id).substring(0,4)}</span>
+                <span className="text-[9px] font-label font-bold text-[#6FF7E8] uppercase tracking-[0.3em] font-mono">{copy.artifact} #{String(p.id).substring(0,4)}</span>
                 <h3 className="font-headline font-bold text-on-surface group-hover:text-[#6FF7E8] transition-colors mt-1 line-clamp-1 text-sm">{p.name}</h3>
                 <Price amount={p.price} className="text-sm font-headline font-bold text-[#6FF7E8] mt-2" />
               </Link>

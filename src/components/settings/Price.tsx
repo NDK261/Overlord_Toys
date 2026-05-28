@@ -11,7 +11,7 @@ type PriceProps = {
 
 export function Price({ amount, className, negative = false }: PriceProps) {
   const { settings } = useAccountSettings();
-  const formatted = formatAccountPrice(amount, settings.shopping.currency);
+  const formatted = formatAccountPrice(amount, settings.shopping.language);
 
   return (
     <span className={className}>

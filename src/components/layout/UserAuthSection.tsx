@@ -5,8 +5,34 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import { useAccountSettings } from "@/hooks/useAccountSettings";
+
+const USER_MENU_COPY = {
+  en: {
+    login: "Login",
+    signedInAs: "Signed in as",
+    administrator: "Administrator",
+    dashboard: "Dashboard",
+    profile: "Profile",
+    orders: "My Orders",
+    settings: "Settings",
+    signOut: "Sign Out",
+  },
+  vi: {
+    login: "\u0110\u0103ng nh\u1eadp",
+    signedInAs: "\u0110ang \u0111\u0103ng nh\u1eadp b\u1eb1ng",
+    administrator: "Qu\u1ea3n tr\u1ecb vi\u00ean",
+    dashboard: "B\u1ea3ng \u0111i\u1ec1u khi\u1ec3n",
+    profile: "H\u1ed3 s\u01a1",
+    orders: "\u0110\u01a1n h\u00e0ng c\u1ee7a t\u00f4i",
+    settings: "C\u00e0i \u0111\u1eb7t",
+    signOut: "\u0110\u0103ng xu\u1ea5t",
+  },
+};
 
 export default function UserAuthSection() {
+  const { settings } = useAccountSettings();
+  const copy = USER_MENU_COPY[settings.shopping.language];
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -73,7 +99,7 @@ export default function UserAuthSection() {
         className="text-on-surface hover:text-[#6FF7E8] transition-all flex items-center gap-2 group"
       >
         <span className="material-symbols-outlined group-hover:scale-110 transition-transform">person</span>
-        <span className="text-xs font-bold uppercase tracking-widest hidden md:inline">Login</span>
+        <span className="text-xs font-bold uppercase tracking-widest hidden md:inline">{copy.login}</span>
       </Link>
     );
   }
@@ -107,10 +133,10 @@ export default function UserAuthSection() {
           />
           <div className="absolute top-full right-0 mt-3 w-56 z-50 bg-[#0a1f26]/95 border border-[#6FF7E8]/30 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl p-2 animate-in fade-in slide-in-from-top-2 duration-200">
             <div className="px-3 py-2 border-b border-white/5 mb-1">
-              <p className="text-[10px] font-black text-[#6FF7E8] uppercase tracking-widest">Signed in as</p>
+              <p className="text-[10px] font-black text-[#6FF7E8] uppercase tracking-widest">{copy.signedInAs}</p>
               <p className="text-xs text-white truncate font-medium">{user.email}</p>
               {role === 'admin' && (
-                <span className="inline-block mt-1 px-2 py-0.5 bg-[#6FF7E8]/10 text-[#6FF7E8] text-[9px] font-bold rounded uppercase tracking-widest">Administrator</span>
+                <span className="inline-block mt-1 px-2 py-0.5 bg-[#6FF7E8]/10 text-[#6FF7E8] text-[9px] font-bold rounded uppercase tracking-widest">{copy.administrator}</span>
               )}
             </div>
             
@@ -121,7 +147,7 @@ export default function UserAuthSection() {
                 className="flex items-center gap-2 px-3 py-2 text-xs text-[#6FF7E8] hover:bg-[#6FF7E8]/10 rounded-lg transition-colors font-bold"
               >
                 <span className="material-symbols-outlined text-[16px]">dashboard</span>
-                Dashboard
+                {copy.dashboard}
               </Link>
             )}
 
@@ -131,7 +157,7 @@ export default function UserAuthSection() {
               className="flex items-center gap-2 px-3 py-2 text-xs text-white/70 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
             >
               <span className="material-symbols-outlined text-[16px]">account_circle</span>
-              Profile
+              {copy.profile}
             </Link>
             
             <Link 
@@ -140,7 +166,7 @@ export default function UserAuthSection() {
               className="flex items-center gap-2 px-3 py-2 text-xs text-white/70 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
             >
               <span className="material-symbols-outlined text-[16px]">package_2</span>
-              My Orders
+              {copy.orders}
             </Link>
 
             <Link 
@@ -149,7 +175,7 @@ export default function UserAuthSection() {
               className="flex items-center gap-2 px-3 py-2 text-xs text-white/70 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
             >
               <span className="material-symbols-outlined text-[16px]">settings</span>
-              Settings
+              {copy.settings}
             </Link>
 
             <button 
@@ -157,7 +183,7 @@ export default function UserAuthSection() {
               className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors mt-1 border-t border-white/5"
             >
               <span className="material-symbols-outlined text-[16px]">logout</span>
-              Sign Out
+              {copy.signOut}
             </button>
           </div>
         </>

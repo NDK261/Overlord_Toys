@@ -47,6 +47,7 @@ function readLegacySettings(userId?: string | null): AccountSettings | null {
       productRecommendations: notif.newArrivals,
     },
     shopping: {
+      language: display.language,
       currency: display.currency,
       defaultPaymentMethod: DEFAULT_ACCOUNT_SETTINGS.shopping.defaultPaymentMethod,
     },
