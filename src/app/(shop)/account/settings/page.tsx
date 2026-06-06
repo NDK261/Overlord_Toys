@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAccountSettings } from "@/hooks/useAccountSettings";
 import { useUser } from "@/hooks/useUser";
+import GlobalLoading from "@/app/loading";
 import {
   LANGUAGE_OPTIONS,
   PAYMENT_METHOD_OPTIONS,
@@ -311,14 +312,7 @@ export default function SettingsPage() {
   };
 
   if (isLoading || !user) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <div
-          aria-label={copy.loadingLabel}
-          className="h-8 w-8 animate-spin rounded-full border-2 border-primary-container/50 border-t-primary-container"
-        />
-      </div>
-    );
+    return <GlobalLoading />;
   }
 
   return (

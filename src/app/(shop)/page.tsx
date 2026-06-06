@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getProducts } from "@/lib/products";
+import HeroVideoPlayer from "@/components/HeroVideoPlayer";
 import { categories as mockCategories, flashDeals, testimonials } from "@/lib/mock-data";
 import { AddToCartButton } from "@/components/product";
 import { Price } from "@/components/settings/Price";
@@ -9,8 +10,7 @@ import { LocalizedText } from "@/components/settings/LocalizedText";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const { data: allProducts } = await getProducts();
-  const featuredProducts = (allProducts || []).slice(0, 8);
+  const { data: featuredProducts } = await getProducts({ limit: 8 });
   const heroProduct = featuredProducts[0];
 
   return (
@@ -39,7 +39,7 @@ export default async function HomePage() {
       `}</style>
 
       {/* --- SECTION 01: HERO --- */}
-      <section className="relative w-full min-h-[800px] flex items-center overflow-hidden px-8 md:px-20 pt-20">
+      <section className="relative w-full min-h-[800px] flex items-center px-8 md:px-20 pt-20">
         <div className="absolute inset-0 bg-gradient-to-br from-[#122227] via-[#06151a] to-[#0e1e23] z-0"></div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#6FF7E8]/10 blur-[120px] rounded-full z-0"></div>
 
@@ -79,13 +79,10 @@ export default async function HomePage() {
             {heroProduct && (
               <div className="relative group">
                 <div className="glass-card p-4 rounded-[2.5rem] transform rotate-3 scale-105 shadow-2xl relative z-20 overflow-hidden">
-                  <div className="aspect-[4/5] relative">
-                    <Image
-                      src={heroProduct.thumbnail_url}
-                      alt={heroProduct.name}
-                      fill
-                      className="rounded-3xl object-cover"
-                      priority
+                  <div className="aspect-[4/5] relative overflow-hidden rounded-3xl">
+                    <HeroVideoPlayer 
+                      videoSrc="/hero-video-v3.mp4" 
+                      audioSrc="/Iron_Maw_Awakening.mp3" 
                     />
                   </div>
                 </div>
@@ -135,21 +132,37 @@ export default async function HomePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {mockCategories.slice(0, 4).map((c, i) => {
             const icons = ["person_play", "swords", "widgets", "stroller"];
-            const emojies = ["🦸", "⚔️", "🧱", "🎪"];
+            
+            const defaultCategoryImages: Record<string, string> = {
+              'gundam': 'https://lh3.googleusercontent.com/aida-public/AB6AXuCfnuMrhlgFSE9LS-rAroY6q7rBXkTrfe9UirKbqHvvy-nDv8p9YM8CiwJf8XRYxUpXKWnEP-fugpcyjlnsNKSBmVZMITG6MDMAGH5QGoXpxgbuALbAB7Wa45TBFwXdyVp1dBffGrfcODAV095eqV_rRuUc5ZdRkJRjE6k58xdpou7o8ZbKNa3xNe_efUtIw7Gr8hXWIikbeJrx2HPdFXQPElgEVWt_bXfnZY-G06TH4_eOgVPoVf-7AJnNPvJJMR_OMQ5EDy7X7h8', 
+              'one-piece': 'https://lh3.googleusercontent.com/aida-public/AB6AXuADLTTO2ztWprcz8-6UJ53sqEKrwlCLOqVWfYWTb5BpPYgQrY13VWsZdrE-CzSHU6f53_vyDx_i8j8AJux89Qjd3sh2qPZqWfxVJsfO8r8nzvT8SUzv5xUDwmxvXDEOHCfPVdvn1zHrCe4f7RmvKNuzeMurlZMH4fLR6mI8N_HIHCx2oaUFkitBXSjdNFKV6xH6SHvQa91Oa9vBq4gKf-TQfm6Jc3Jx0pRyxJzZ_T5ws0xDAiGg9FNYK_JjIJsdOv7UhZydAJqnH58',
+              'lego': 'https://lh3.googleusercontent.com/aida-public/AB6AXuBDf4LaN4L6NaA6Dp756A_MbayflwUQrc_biAR8csZB4ZzSXkIwDd_-Fah1hxsSj5fk89a5e-aiDHDDAbxXImYx-3r7kyyUUhspr1Pph9ypYiCaaWnAos8w3F3KZfxqVOkzk9dCHgsUskTISmhIM_vuOqgADiv9HMpV8quSsLlkSYtaL0NzPO2_DydEM4vg0bW1HIugcsT8JeMsg62Ac-tAESkXGP6JwHpSkr0tcMRgnSY_stO-dEZ1TZXIXBylIIZK6ijujJdteW0', 
+              'rc-car': 'https://lh3.googleusercontent.com/aida-public/AB6AXuADDPKje3HlvR1SxDfmAJjKY7mZ3SyODXfN4U22mAIhaGLqVWg-ImBxXdX8TvEk3Oqn1vZQyvPUXiHMyUpsWVXJmJrmkn47gnUnMy8DFJop64RIfCmLwv9ufTvdHVkn7KqBbC3aXxF4sfqs8LDEehmUGtQ_2vUHGzOdheA1AAuA7u6nvfhq8jQjv8WsgkzD2bFVucBT7132XmbVOdOXZQuq12ZhS7SYJgiprjq86NmtDhsLAJhXOrF-Mm-RMliogH7CzU7S9pK_iZs' 
+            };
+
+            // Tìm hình ảnh sản phẩm đại diện cho category, ưu tiên sản phẩm đầu tiên thuộc category này trong shop
+            // Kiểm tra cả id và slug do data có thể lưu dưới 1 trong 2 dạng
+            const categoryProduct = (featuredProducts || []).find(p => p.category_id === c.id || p.category_id === c.slug);
+            
+            // Nếu không có sản phẩm nào thuộc category, giữ nguyên fallback
+            const catImage = categoryProduct?.thumbnail_url || defaultCategoryImages[c.slug] || (featuredProducts || [])[i]?.thumbnail_url;
             return (
               <Link key={c.id} href={`/shop?category=${c.id}`} className="glass-card glow-hover p-10 rounded-[2rem] transition-all duration-300 group cursor-pointer relative overflow-hidden">
-                <div className="absolute -right-4 -top-4 text-8xl opacity-5 group-hover:opacity-10 transition-opacity translate-x-4 -translate-y-4">
-                  {emojies[i % emojies.length]}
-                </div>
-                <div className="space-y-6">
-                  <div className="w-14 h-14 bg-[#6FF7E8]/10 rounded-2xl flex items-center justify-center border border-[#6FF7E8]/20">
+                {catImage && (
+                  <div className="absolute inset-0 z-0">
+                    <Image src={catImage} alt={c.name} fill className="object-cover opacity-10 group-hover:opacity-30 transition-all duration-500 group-hover:scale-110 blur-[2px] group-hover:blur-0" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#06151a] via-[#06151a]/50 to-transparent opacity-90"></div>
+                  </div>
+                )}
+                <div className="space-y-6 relative z-10">
+                  <div className="w-14 h-14 bg-[#6FF7E8]/10 rounded-2xl flex items-center justify-center border border-[#6FF7E8]/20 backdrop-blur-md">
                     <span className="material-symbols-outlined text-[#6FF7E8] text-3xl">{icons[i % icons.length]}</span>
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-2xl font-['Plus_Jakarta_Sans'] font-bold text-white">{c.name}</h3>
+                    <h3 className="text-2xl font-['Plus_Jakarta_Sans'] font-bold text-white group-hover:text-[#6FF7E8] transition-colors drop-shadow-md">{c.name}</h3>
                     <LocalizedText
                       as="p"
-                      className="text-sm text-white/40 font-medium"
+                      className="text-sm text-white/60 font-medium drop-shadow-md"
                       en="Explore the collection"
                       vi="Xem bộ sưu tập"
                     />

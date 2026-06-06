@@ -44,7 +44,7 @@ export default async function ShopPage({
           {products.length === 0 ? (
             <ShopEmptyState hasSearch={hasSearch} />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 grid-flow-dense">
               {products.map((p, i) => (
                 <div key={p.id} className={`glass-card rounded-2xl overflow-hidden group glow-hover flex flex-col ${i === 1 || i === 7 ? 'md:col-span-2' : ''}`}>
                   <Link href={`/product/${p.slug}`} className={`relative ${i === 1 || i === 7 ? 'aspect-video' : 'aspect-square'} overflow-hidden bg-surface-container-low block`}>

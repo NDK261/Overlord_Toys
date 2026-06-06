@@ -5,17 +5,24 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { AdminTopSearch } from "@/components/admin/AdminTopSearch";
+import { useUser } from "@/hooks/useUser";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { user, profile, loading, signOut } = useUser();
+
+  const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || "Admin User";
+  const avatarUrl = user?.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${displayName}&background=6FF7E8&color=003732`;
 
   return (
     <div className="bg-surface overflow-x-hidden font-body text-on-surface min-h-screen">
       {/* SideNavBar */}
       <aside className="h-screen w-64 fixed left-0 top-0 bg-[#06151a] backdrop-blur-xl flex flex-col py-8 z-50 border-r border-outline-variant/10 shadow-[0_0_40px_rgba(78,219,205,0.05)]">
         <div className="px-8 mb-12">
-          <h1 className="text-2xl font-black bg-gradient-to-r from-[#6FF7E8] to-[#1F7EA1] bg-clip-text text-transparent font-headline tracking-tighter">OVERLORD</h1>
-          <p className="text-[10px] tracking-[0.2em] text-on-surface-variant/50 font-headline uppercase mt-1">Neural Archive</p>
+          <Link href="/" className="block group">
+            <h1 className="text-2xl font-black bg-gradient-to-r from-[#6FF7E8] to-[#1F7EA1] bg-clip-text text-transparent font-headline tracking-tighter group-hover:brightness-125 transition-all">OVERLORD</h1>
+            <p className="text-[10px] tracking-[0.2em] text-on-surface-variant/50 font-headline uppercase mt-1 group-hover:text-[#6FF7E8] transition-colors">Return to Storefront</p>
+          </Link>
         </div>
         
         <nav className="flex-1 flex flex-col gap-1">
@@ -31,27 +38,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <span className={`material-symbols-outlined ${!pathname?.includes("/admin/orders") && 'group-hover:text-cyan-400'}`}>shopping_cart</span>
             <span className="font-headline tracking-wide text-sm">Orders</span>
           </Link>
-          <Link href="/admin/customers" className={`${pathname?.includes("/admin/customers") ? 'text-cyan-300 font-bold border-r-2 border-cyan-400 bg-[#28373d]/20' : 'text-on-surface/70 hover:bg-[#28373d]/40 group'} flex items-center gap-4 px-8 py-4 transition-all duration-300`}>
-            <span className={`material-symbols-outlined ${!pathname?.includes("/admin/customers") && 'group-hover:text-cyan-400'}`}>groups</span>
-            <span className="font-headline tracking-wide text-sm">Customers</span>
-          </Link>
-          <Link href="/admin/analytics" className={`${pathname?.includes("/admin/analytics") ? 'text-cyan-300 font-bold border-r-2 border-cyan-400 bg-[#28373d]/20' : 'text-on-surface/70 hover:bg-[#28373d]/40 group'} flex items-center gap-4 px-8 py-4 transition-all duration-300`}>
-            <span className={`material-symbols-outlined ${!pathname?.includes("/admin/analytics") && 'group-hover:text-cyan-400'}`}>monitoring</span>
-            <span className="font-headline tracking-wide text-sm">Analytics</span>
-          </Link>
+
         </nav>
 
         <div className="mt-auto px-6 border-t border-outline-variant/10 pt-6">
           <div className="flex items-center gap-3 mb-6 px-2">
-            <div className="w-10 h-10 rounded-full border border-primary/20 p-0.5">
-              <Image width={40} height={40} alt="Admin User" className="w-full h-full rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSpDoiivnwOtSDb3XE52L5AinqCvsD90Z8aBicnSp11-eGf4sdScZJNKU2rLE-A-QGBUUGIrSWjh7Po-mKnbRXQIJxIC6ZFxea7wcF1xJ432YjzRrA9JV0I7OsmXVCPibyv_QhzLL6FsxRfF4qYrcPV2oetQFWAsSU9o4xvw5AtK3ic6PJkb1XPZW20GTOBb_a1fl6OEqUoM5XAUSVd_pniQwDnABxBDZ_5yfOTTvVNLIFTzsaNxEwXtlrPWD5q1jRXKFAdoGm9Rg"/>
+            <div className={`w-10 h-10 rounded-full border border-primary/20 p-0.5 overflow-hidden shrink-0 ${loading ? 'animate-pulse bg-white/10' : ''}`}>
+              {!loading && (
+                <img alt={displayName} className="w-full h-full rounded-full object-cover" src={avatarUrl} />
+              )}
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-bold text-on-surface">Admin User</span>
-              <span className="text-[10px] text-on-surface-variant">Core Access</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-bold text-on-surface truncate max-w-[120px]">
+                {loading ? 'Loading...' : displayName}
+              </span>
+              <span className="text-[10px] text-on-surface-variant truncate">
+                {profile?.role === 'admin' ? 'Core Access' : 'Limited Access'}
+              </span>
             </div>
           </div>
-          <button className="w-full flex items-center gap-4 px-2 py-3 text-on-surface/70 hover:text-error transition-colors cursor-pointer">
+          <button 
+            onClick={() => signOut()}
+            className="w-full flex items-center gap-4 px-2 py-3 text-on-surface/70 hover:text-error transition-colors cursor-pointer"
+          >
             <span className="material-symbols-outlined">logout</span>
             <span className="font-headline tracking-wide text-sm">Logout</span>
           </button>
@@ -87,9 +96,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <span className="material-symbols-outlined">notifications</span>
               <span className="absolute top-2 right-2 w-2 h-2 bg-primary-container rounded-full"></span>
             </button>
-            <button className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-variant transition-colors text-on-surface-variant">
+            <Link href="/account/settings" className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-variant transition-colors text-on-surface-variant">
               <span className="material-symbols-outlined">settings</span>
-            </button>
+            </Link>
           </div>
         </div>
       </header>

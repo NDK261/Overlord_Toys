@@ -10,7 +10,7 @@ interface OrdersListProps {
   userEmail: string;
 }
 
-type OrderFilter = "all" | "paid" | "shipped" | "cancelled";
+type OrderFilter = "all" | "paid" | "processing" | "shipped" | "cancelled";
 type SortMode = "latest" | "oldest";
 
 const ORDER_COPY = {
@@ -20,6 +20,7 @@ const ORDER_COPY = {
     filters: {
       all: "All",
       paid: "Paid",
+      processing: "Processing",
       shipped: "Shipped",
       cancelled: "Cancelled",
     },
@@ -37,6 +38,7 @@ const ORDER_COPY = {
     items: "items",
     statuses: {
       paid: "Confirmed",
+      processing: "Processing",
       shipping: "In Transit",
       pending: "Wait for Payment",
       completed: "Delivered",
@@ -51,6 +53,7 @@ const ORDER_COPY = {
     filters: {
       all: "Tất cả",
       paid: "Đã thanh toán",
+      processing: "Đang xử lý",
       shipped: "Đang giao",
       cancelled: "Đã hủy",
     },
@@ -68,6 +71,7 @@ const ORDER_COPY = {
     items: "sản phẩm",
     statuses: {
       paid: "Đã xác nhận",
+      processing: "Đang xử lý",
       shipping: "Đang vận chuyển",
       pending: "Chờ thanh toán",
       completed: "Đã giao",
@@ -78,13 +82,15 @@ const ORDER_COPY = {
   },
 };
 
-const FILTERS: OrderFilter[] = ["all", "paid", "shipped", "cancelled"];
+const FILTERS: OrderFilter[] = ["all", "paid", "processing", "shipped", "cancelled"];
 
 function getOrderStatusLabel(
-  status: string,
+  rawStatus: string,
   copy: (typeof ORDER_COPY)["en"],
 ) {
+  const status = (rawStatus || "").toLowerCase();
   if (status === "paid") return copy.statuses.paid;
+  if (status === "processing") return copy.statuses.processing;
   if (status === "shipping" || status === "shipped") return copy.statuses.shipping;
   if (status === "pending") return copy.statuses.pending;
   if (status === "completed") return copy.statuses.completed;
@@ -101,12 +107,14 @@ export function OrdersList({ initialOrders, userEmail }: OrdersListProps) {
 
   const filteredOrders = useMemo(() => {
     const nextOrders = initialOrders.filter((order) => {
+      const status = (order.status || "").toLowerCase();
       if (filter === "all") return true;
-      if (filter === "paid") return order.status === "paid";
+      if (filter === "paid") return status === "paid";
+      if (filter === "processing") return status === "processing";
       if (filter === "shipped") {
-        return order.status === "shipping" || order.status === "shipped";
+        return status === "shipping" || status === "shipped";
       }
-      if (filter === "cancelled") return order.status === "cancelled";
+      if (filter === "cancelled") return status === "cancelled";
       return true;
     });
 
@@ -186,6 +194,7 @@ export function OrdersList({ initialOrders, userEmail }: OrdersListProps) {
             const itemCount = order.order_items?.length || 0;
             const itemLabel = itemCount === 1 ? copy.item : copy.items;
             const statusLabel = getOrderStatusLabel(order.status, copy);
+            const orderStatus = (order.status || "").toLowerCase();
 
             return (
               <div
@@ -195,7 +204,7 @@ export function OrdersList({ initialOrders, userEmail }: OrdersListProps) {
                 <div className="flex flex-col lg:flex-row items-stretch">
                   <div
                     className={`p-6 flex-1 flex flex-col md:flex-row md:items-center gap-8 ${
-                      order.status === "cancelled" ? "opacity-40" : ""
+                      orderStatus === "cancelled" ? "opacity-40" : ""
                     }`}
                   >
                     <div className="flex-shrink-0">
@@ -232,27 +241,32 @@ export function OrdersList({ initialOrders, userEmail }: OrdersListProps) {
                       />
                     </div>
                     <div className="flex-shrink-0">
-                      {order.status === "paid" && (
+                      {orderStatus === "paid" && (
                         <span className="px-3 py-1 rounded-full bg-[#6FF7E8]/10 text-[#6FF7E8] border border-[#6FF7E8]/20 text-[10px] font-black uppercase tracking-tighter shadow-[0_0_10px_rgba(111,247,232,0.1)]">
                           {statusLabel}
                         </span>
                       )}
-                      {(order.status === "shipping" || order.status === "shipped") && (
+                      {orderStatus === "processing" && (
+                        <span className="px-3 py-1 rounded-full bg-[#1F7EA1]/10 text-[#6FF7E8] border border-[#1F7EA1]/20 text-[10px] font-black uppercase tracking-tighter shadow-[0_0_10px_rgba(31,126,161,0.1)]">
+                          {statusLabel}
+                        </span>
+                      )}
+                      {(orderStatus === "shipping" || orderStatus === "shipped") && (
                         <span className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[10px] font-black uppercase tracking-tighter">
                           {statusLabel}
                         </span>
                       )}
-                      {order.status === "pending" && (
+                      {orderStatus === "pending" && (
                         <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[10px] font-black uppercase tracking-tighter animate-pulse">
                           {statusLabel}
                         </span>
                       )}
-                      {order.status === "completed" && (
+                      {orderStatus === "completed" && (
                         <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-black uppercase tracking-tighter">
                           {statusLabel}
                         </span>
                       )}
-                      {order.status === "cancelled" && (
+                      {orderStatus === "cancelled" && (
                         <span className="px-3 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 text-[10px] font-black uppercase tracking-tighter">
                           {statusLabel}
                         </span>
@@ -266,7 +280,7 @@ export function OrdersList({ initialOrders, userEmail }: OrdersListProps) {
                     >
                       {copy.verify}
                     </Link>
-                    {order.status === "pending" && order.payment_url && (
+                    {orderStatus === "pending" && order.payment_url && (
                       <a
                         href={order.payment_url}
                         className="w-full text-center py-2.5 px-6 rounded-xl bg-gradient-primary text-[#003732] hover:brightness-110 transition-all font-black text-[10px] uppercase tracking-widest"

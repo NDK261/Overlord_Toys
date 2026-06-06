@@ -1,6 +1,6 @@
 // src/app/api/webhook/payos/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { createPublicServerSupabaseClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyPayOSWebhookData } from "@/lib/payos";
 
 export async function POST(request: NextRequest) {
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     // 2. Kiểm tra thanh toán thành công
     if (success) {
-      const supabase = createPublicServerSupabaseClient();
+      const supabase = createAdminClient();
 
       // Cập nhật order status = paid
       // Lưu ý: Trong hệ thống của ta, id của order là UUID, nhưng PayOS dùng số orderCode.

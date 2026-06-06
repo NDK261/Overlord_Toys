@@ -121,16 +121,19 @@ export default function AdminOrdersPage() {
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-2">
                         <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${
-                          order.status === 'processing' || order.status === 'completed' ? 'bg-[#6FF7E8]' : 
+                          ['processing', 'completed', 'paid', 'shipped'].includes(order.status) ? 'bg-[#6FF7E8]' : 
                           order.status === 'pending' ? 'bg-yellow-400' : 'bg-red-400'
                         }`}></div>
                         <p className={`text-[10px] font-black uppercase tracking-widest ${
-                           order.status === 'processing' || order.status === 'completed' ? 'text-[#6FF7E8]' : 
+                           ['processing', 'completed', 'paid', 'shipped'].includes(order.status) ? 'text-[#6FF7E8]' : 
                            order.status === 'pending' ? 'text-yellow-400' : 'text-red-400'
                         }`}>
                           {order.status === 'processing' ? 'Processing' : 
                            order.status === 'pending' ? 'Pending' : 
-                           order.status === 'completed' ? 'Completed' : 'Cancelled'}
+                           order.status === 'completed' ? 'Completed' : 
+                           order.status === 'paid' ? 'Paid' : 
+                           order.status === 'shipped' ? 'Shipped' : 
+                           order.status === 'cancelled' ? 'Cancelled' : order.status}
                         </p>
                       </div>
                     </td>

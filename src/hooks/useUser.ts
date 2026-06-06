@@ -42,21 +42,23 @@ export function useUser() {
 
   useEffect(() => {
     // 1. Lấy session hiện tại
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) fetchProfile(session.user.id);
+      if (session?.user) {
+        await fetchProfile(session.user.id);
+      }
       setLoading(false);
     });
 
     // 2. Lắng nghe thay đổi auth state
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
+        await fetchProfile(session.user.id);
       } else {
         setProfile(null);
       }
