@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { getDashboardStats, getRecentOrders, getRevenueMetrics, getTopSellingProducts } from "@/lib/admin";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminDashboardPage() {
   const [stats, recentOrders, revenueMetrics, topSelling] = await Promise.all([
     getDashboardStats(),
