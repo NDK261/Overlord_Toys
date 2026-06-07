@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createPublicServerSupabaseClient } from "@/lib/supabase/server";
 import { PaymentFactory } from "@/lib/payment/PaymentFactory";
-import { sendOrderConfirmationEmail } from "@/lib/resend";
+import { sendOrderConfirmationEmail } from "@/lib/smtp";
 
 export async function POST(request: NextRequest) {
   try {
@@ -142,7 +142,8 @@ export async function POST(request: NextRequest) {
         .eq("id", order.id);
     }
 
-    if (shouldSendOrderUpdates) {
+    // Send email immediately only for COD. For PayOS, the webhook will handle it when paid.
+    if (shouldSendOrderUpdates && paymentMethod === "cod") {
       try {
         await sendOrderConfirmationEmail({
           to: customerInfo.email,

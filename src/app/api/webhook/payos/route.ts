@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyPayOSWebhookData } from "@/lib/payos";
+import { sendOrderConfirmationEmail } from "@/lib/smtp";
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,6 +45,38 @@ export async function POST(request: NextRequest) {
           .eq("id", orderId);
         
         console.log(`[PAYOS WEBHOOK] Order ${orderId} marked as PAID`);
+
+        // Fetch full order details to send email
+        const { data: fullOrder } = await supabase
+          .from("orders")
+          .select("customer_name, customer_email, customer_address, total_price")
+          .eq("id", orderId)
+          .single();
+
+        const { data: orderItems } = await supabase
+          .from("order_items")
+          .select("quantity, price, products(name)")
+          .eq("order_id", orderId);
+
+        if (fullOrder && fullOrder.customer_email && orderItems) {
+          try {
+            await sendOrderConfirmationEmail({
+              to: fullOrder.customer_email,
+              orderId: orderId,
+              customerName: fullOrder.customer_name || "Customer",
+              shippingAddress: fullOrder.customer_address || "Not provided",
+              totalPrice: fullOrder.total_price,
+              items: orderItems.map((item: any) => ({
+                name: item.products?.name || "Unknown Product",
+                quantity: item.quantity,
+                price: item.price,
+              })),
+            });
+            console.log(`[PAYOS WEBHOOK] Email sent for order ${orderId}`);
+          } catch (emailError) {
+            console.error(`[PAYOS WEBHOOK] Failed to send email for order ${orderId}`, emailError);
+          }
+        }
       }
     }
 

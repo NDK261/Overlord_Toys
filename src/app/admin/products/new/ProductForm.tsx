@@ -1,14 +1,54 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createProduct, updateProduct, getCategories } from "../actions";
+import { supabase } from "@/lib/supabase/client";
 
 export default function ProductForm({ initialData }: { initialData?: any }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [thumbnailUrl, setThumbnailUrl] = useState(initialData?.thumbnail_url || "");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingImage(true);
+      setError(null);
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('products')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('products')
+        .getPublicUrl(filePath);
+
+      setThumbnailUrl(publicUrl);
+    } catch (err: any) {
+      console.error('Upload error:', err);
+      setError(err.message || "Failed to upload image.");
+    } finally {
+      setUploadingImage(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   useEffect(() => {
     async function fetchCategories() {
@@ -148,7 +188,8 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest ml-1">Visual Protocol (URL)</label>
                 <input
                   required
-                  defaultValue={initialData?.thumbnail_url}
+                  value={thumbnailUrl}
+                  onChange={(e) => setThumbnailUrl(e.target.value)}
                   name="thumbnail_url"
                   type="url"
                   placeholder="https://visual-archive.ai/image.png"
@@ -156,11 +197,31 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 />
               </div>
 
-              <div className="p-6 bg-white/2 border border-white/5 rounded-2xl border-dashed">
-                <div className="flex flex-col items-center justify-center gap-2 text-on-surface-variant opacity-40">
-                  <span className="material-symbols-outlined text-4xl">cloud_upload</span>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em]">Neural Uplink Interface</p>
+              <div 
+                className={`p-6 bg-white/2 border border-white/5 rounded-2xl border-dashed cursor-pointer transition-all hover:bg-white/5 hover:border-[#6FF7E8]/50 ${uploadingImage ? 'opacity-50 pointer-events-none' : ''}`}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <div className="flex flex-col items-center justify-center gap-2 text-on-surface-variant opacity-60">
+                  {uploadingImage ? (
+                    <>
+                      <div className="w-8 h-8 rounded-full border-2 border-[#6FF7E8]/20 border-t-[#6FF7E8] animate-spin mb-1" />
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#6FF7E8] animate-pulse">UPLOADING TO MAINFRAME...</p>
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-4xl mb-1 group-hover:text-[#6FF7E8] transition-colors">cloud_upload</span>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em]">Neural Uplink Interface</p>
+                      <p className="text-[8px] uppercase tracking-widest opacity-50">Click to Select Local File</p>
+                    </>
+                  )}
                 </div>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  className="hidden" 
+                  ref={fileInputRef}
+                  onChange={handleImageUpload}
+                />
               </div>
             </div>
           </div>

@@ -1,10 +1,11 @@
 "use server";
 
 import { createPublicServerSupabaseClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 
 export async function createProduct(formData: FormData) {
-  const supabase = createPublicServerSupabaseClient();
+  const supabase = createAdminClient();
   
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
@@ -51,7 +52,7 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function updateProduct(id: string, formData: FormData) {
-  const supabase = createPublicServerSupabaseClient();
+  const supabase = createAdminClient();
   
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
@@ -97,7 +98,7 @@ export async function getCategories() {
 }
 
 export async function deleteProduct(id: string) {
-  const supabase = createPublicServerSupabaseClient();
+  const supabase = createAdminClient();
   const { error } = await supabase
     .from("products")
     .delete()
