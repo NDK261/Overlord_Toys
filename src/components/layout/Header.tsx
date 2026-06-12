@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Suspense } from "react";
 import { usePathname } from "next/navigation";
 import CartLink from "@/components/layout/CartLink";
@@ -49,21 +50,30 @@ export default function Header() {
 
   const getLinkClasses = (path: string) => {
     const active = isActive(path);
-    return `transition-all duration-300 font-medium pb-1 ${
-      active
+    return `transition-all duration-300 font-medium pb-1 ${active
         ? "text-[#6FF7E8] font-bold border-b-2 border-[#6FF7E8] shadow-[0_2px_10px_rgba(111,247,232,0.2)]"
         : "text-[#EAFAF8]/70 hover:text-[#6FF7E8]"
-    }`;
+      }`;
   };
 
   return (
     <header className="sticky top-0 z-50 flex items-center justify-between px-8 py-4 w-full max-w-none bg-[#06151a]/80 backdrop-blur-xl border-b border-[#6FF7E8]/10 shadow-[0_0_20px_rgba(111,247,232,0.05)] font-['Plus_Jakarta_Sans'] tracking-tight">
       <div className="flex items-center gap-12">
         <Link
-          className="text-2xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-[#6FF7E8] to-[#1F7EA1] hover:opacity-80 transition-opacity"
+          className="flex items-center gap-3 hover:opacity-80 transition-opacity"
           href="/"
         >
-          OVERLORD TOYS
+          <div className="relative w-10 h-10 overflow-hidden rounded-md border border-[#6FF7E8]/30 shadow-[0_0_10px_rgba(111,247,232,0.2)]">
+            <Image
+              src="/logo_web_cropped.png"
+              alt="Overlord Toys Logo"
+              fill
+              className="object-cover"
+            />
+          </div>
+          <span className="text-2xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-[#6FF7E8] to-[#1F7EA1]">
+            OVERLORD TOYS
+          </span>
         </Link>
         <nav className="hidden md:flex items-center gap-8">
           <Link className={getLinkClasses("/shop")} href="/shop">
@@ -73,11 +83,10 @@ export default function Header() {
           {/* CATEGORIES MASTER DROPDOWN */}
           <div className="relative group px-2 py-4 -my-4">
             <button
-              className={`transition-colors flex items-center gap-1 font-medium bg-transparent ${
-                pathname.startsWith("/category")
+              className={`transition-colors flex items-center gap-1 font-medium bg-transparent ${pathname.startsWith("/category")
                   ? "text-[#6FF7E8]"
                   : "text-[#EAFAF8]/70 hover:text-[#6FF7E8]"
-              }`}
+                }`}
             >
               {copy.categories}
               <span className="material-symbols-outlined text-[16px] group-hover:rotate-180 transition-transform duration-300">

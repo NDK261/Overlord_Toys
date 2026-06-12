@@ -80,6 +80,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "c.cdnmp.net",
       },
+      {
+        protocol: "https",
+        hostname: "tcnfznjuzwmgkwbbyzvq.supabase.co",
+      },
     ],
   },
 };
