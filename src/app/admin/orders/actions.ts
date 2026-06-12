@@ -48,3 +48,30 @@ export async function updateOrderStatus(orderId: string, status: string) {
   }
 }
 
+export async function getOrderItems(orderId: string) {
+  try {
+    await verifyAdmin();
+    const supabase = createAdminClient();
+    
+    // Fetch order items and join with products to get name and thumbnail
+    const { data, error } = await supabase
+      .from("order_items")
+      .select(`
+        *,
+        products (
+          name,
+          thumbnail_url
+        )
+      `)
+      .eq("order_id", orderId);
+
+    if (error) {
+      console.error("Error fetching order items:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

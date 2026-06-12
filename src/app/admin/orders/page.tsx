@@ -11,19 +11,19 @@ export default function AdminOrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [statusFilter, setStatusFilter] = useState("all");
 
-  useEffect(() => {
-    async function fetchOrders() {
-      const result = await getAdminOrders();
+  const loadOrders = async () => {
+    const result = await getAdminOrders();
 
-      if (!result.success) {
-        setError(result.error || "Không thể lấy danh sách đơn hàng.");
-      } else {
-        setOrders(result.data || []);
-      }
-      setLoading(false);
+    if (!result.success) {
+      setError(result.error || "Không thể lấy danh sách đơn hàng.");
+    } else {
+      setOrders(result.data || []);
     }
+    setLoading(false);
+  };
 
-    fetchOrders();
+  useEffect(() => {
+    loadOrders();
   }, []);
 
 
@@ -168,6 +168,7 @@ export default function AdminOrdersPage() {
         <OrderDetailModal 
           order={selectedOrder} 
           onClose={() => setSelectedOrder(null)} 
+          onUpdate={loadOrders}
         />
       )}
     </div>

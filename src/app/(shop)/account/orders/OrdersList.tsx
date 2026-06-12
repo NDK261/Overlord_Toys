@@ -10,7 +10,7 @@ interface OrdersListProps {
   userEmail: string;
 }
 
-type OrderFilter = "all" | "paid" | "processing" | "shipped" | "cancelled";
+type OrderFilter = "all" | "pending" | "paid" | "processing" | "shipped" | "completed" | "cancelled";
 type SortMode = "latest" | "oldest";
 
 const ORDER_COPY = {
@@ -19,10 +19,12 @@ const ORDER_COPY = {
     archive: "ARCHIVE // TRANSACTION_LOGS_2026",
     filters: {
       all: "All",
-      paid: "Paid",
+      pending: "Wait for Payment",
+      paid: "Confirmed",
       processing: "Processing",
-      shipped: "Shipped",
-      cancelled: "Cancelled",
+      shipped: "In Transit",
+      completed: "Delivered",
+      cancelled: "Aborted",
     },
     sort: {
       latest: "Latest Transactions",
@@ -52,9 +54,11 @@ const ORDER_COPY = {
     archive: "LƯU TRỮ // NHẬT KÝ GIAO DỊCH 2026",
     filters: {
       all: "Tất cả",
-      paid: "Đã thanh toán",
+      pending: "Chờ thanh toán",
+      paid: "Đã xác nhận",
       processing: "Đang xử lý",
-      shipped: "Đang giao",
+      shipped: "Đang vận chuyển",
+      completed: "Đã giao",
       cancelled: "Đã hủy",
     },
     sort: {
@@ -82,7 +86,7 @@ const ORDER_COPY = {
   },
 };
 
-const FILTERS: OrderFilter[] = ["all", "paid", "processing", "shipped", "cancelled"];
+const FILTERS: OrderFilter[] = ["all", "pending", "paid", "processing", "shipped", "completed", "cancelled"];
 
 function getOrderStatusLabel(
   rawStatus: string,
@@ -109,11 +113,13 @@ export function OrdersList({ initialOrders, userEmail }: OrdersListProps) {
     const nextOrders = initialOrders.filter((order) => {
       const status = (order.status || "").toLowerCase();
       if (filter === "all") return true;
+      if (filter === "pending") return status === "pending";
       if (filter === "paid") return status === "paid";
       if (filter === "processing") return status === "processing";
       if (filter === "shipped") {
         return status === "shipping" || status === "shipped";
       }
+      if (filter === "completed") return status === "completed";
       if (filter === "cancelled") return status === "cancelled";
       return true;
     });

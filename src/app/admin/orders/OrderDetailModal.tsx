@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { updateOrderStatus } from "./actions";
+import { useState, useEffect } from "react";
+import { updateOrderStatus, getOrderItems } from "./actions";
 
 interface OrderItem {
   id: string;
@@ -22,15 +22,30 @@ interface Order {
   created_at: string;
 }
 
-export default function OrderDetailModal({ order, onClose }: { order: Order; onClose: () => void }) {
+export default function OrderDetailModal({ order, onClose, onUpdate }: { order: Order; onClose: () => void; onUpdate?: () => void }) {
   const [status, setStatus] = useState(order.status);
   const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState<any[]>([]);
+  const [loadingItems, setLoadingItems] = useState(true);
+
+  useEffect(() => {
+    async function fetchItems() {
+      const result = await getOrderItems(order.id);
+      if (result.success) {
+        setItems(result.data || []);
+      }
+      setLoadingItems(false);
+    }
+    fetchItems();
+  }, [order.id]);
 
   const handleUpdateStatus = async () => {
     setLoading(true);
     const result = await updateOrderStatus(order.id, status);
     if (result.success) {
       alert("Cập nhật trạng thái thành công!");
+      if (onUpdate) onUpdate();
+      onClose();
     } else {
       alert("Lỗi: " + result.error);
     }
@@ -53,7 +68,9 @@ export default function OrderDetailModal({ order, onClose }: { order: Order; onC
               className="bg-surface-container-high text-xs text-[#6FF7E8] border border-[#6FF7E8]/20 rounded-lg px-3 py-1.5 focus:ring-0 outline-none appearance-none cursor-pointer"
             >
               <option value="pending">Pending</option>
+              <option value="paid">Paid</option>
               <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
             </select>
@@ -83,13 +100,39 @@ export default function OrderDetailModal({ order, onClose }: { order: Order; onC
             </div>
           </div>
 
-          {/* Note: In a real app, you would fetch order items here. For now, we'll show a placeholder or mock */}
           <div>
             <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#6FF7E8] mb-4">Neural Assets</h4>
-            <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden p-1">
-              <div className="p-4 text-center text-xs text-on-surface-variant italic">
-                Chi tiết sản phẩm sẽ được hiển thị tại đây.
-              </div>
+            <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden p-1 space-y-1">
+              {loadingItems ? (
+                <div className="p-4 text-center text-xs text-on-surface-variant animate-pulse">
+                  Đang quét dữ liệu sản phẩm...
+                </div>
+              ) : items.length === 0 ? (
+                <div className="p-4 text-center text-xs text-on-surface-variant italic">
+                  Không tìm thấy sản phẩm nào.
+                </div>
+              ) : (
+                items.map((item) => (
+                  <div key={item.id} className="flex items-center gap-4 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
+                    <div className="w-12 h-12 rounded bg-black/50 overflow-hidden flex-shrink-0 border border-white/10">
+                      {item.products?.thumbnail_url ? (
+                        <img src={item.products.thumbnail_url} alt={item.products.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-white/20 text-[10px]">No Img</div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-white truncate">{item.products?.name || "Sản phẩm không xác định"}</p>
+                      <p className="text-[10px] text-on-surface-variant uppercase mt-1 tracking-widest">
+                        QTY: {item.quantity} × {(item.price || 0).toLocaleString('vi-VN')}đ
+                      </p>
+                    </div>
+                    <div className="text-sm font-black text-[#6FF7E8]">
+                      {((item.price || 0) * (item.quantity || 1)).toLocaleString('vi-VN')}đ
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
