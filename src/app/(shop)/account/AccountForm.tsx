@@ -65,6 +65,21 @@ export function AccountForm({
     setIsSaving(true);
     setStatus(null);
 
+    const trimmedPhone = formData.phone?.trim();
+    if (trimmedPhone) {
+      const isValidPhone = /^0\d{9}$/.test(trimmedPhone);
+      if (!isValidPhone) {
+        setStatus({
+          type: "error",
+          message: settings.shopping.language === "vi" 
+            ? "Số điện thoại không hợp lệ. Chỉ được nhập số, phải bắt đầu bằng số 0 và có đúng 10 chữ số." 
+            : "Invalid phone number. Must contain only digits, start with 0, and have exactly 10 digits."
+        });
+        setIsSaving(false);
+        return;
+      }
+    }
+
     try {
       await updateProfile(formData);
       setStatus({ type: "success", message: copy.success });

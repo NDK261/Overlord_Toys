@@ -7,6 +7,9 @@
 //  3. Cập nhật trạng thái đơn hàng → PAID nếu thành công
 
 import { NextRequest, NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+
+export const dynamic = "force-dynamic";
 
 // IPN (server-to-server notification)
 export async function POST(request: NextRequest) {
@@ -20,10 +23,44 @@ export async function POST(request: NextRequest) {
     const { vnp_ResponseCode, vnp_TxnRef } = body;
 
     if (vnp_ResponseCode === "00") {
-      // TODO: Cập nhật order status = paid
-      // await supabase.from("orders").update({ status: "paid" }).eq("id", vnp_TxnRef)
+      const supabase = createAdminClient();
 
-      console.log(`[VNPAY WEBHOOK] Order ${vnp_TxnRef} paid successfully`);
+      // Cập nhật trạng thái đơn hàng = paid
+      const { data: order, error: orderError } = await supabase
+        .from("orders")
+        .update({ status: "paid" })
+        .eq("id", vnp_TxnRef)
+        .eq("status", "pending")
+        .select()
+        .single();
+
+      if (order) {
+        console.log(`[VNPAY WEBHOOK] Order ${vnp_TxnRef} marked as PAID`);
+
+        // Khấu trừ tồn kho của sản phẩm trong đơn hàng
+        const { data: orderItems } = await supabase
+          .from("order_items")
+          .select("product_id, quantity")
+          .eq("order_id", vnp_TxnRef);
+
+        if (orderItems) {
+          for (const item of orderItems) {
+            const { data: dbProd } = await supabase
+              .from("products")
+              .select("stock")
+              .eq("id", item.product_id)
+              .single();
+
+            if (dbProd) {
+              const newStock = Math.max(0, dbProd.stock - item.quantity);
+              await supabase
+                .from("products")
+                .update({ stock: newStock })
+                .eq("id", item.product_id);
+            }
+          }
+        }
+      }
     }
 
     // VNPay yêu cầu response format cụ thể

@@ -196,10 +196,31 @@ export default function CartPage() {
                       <p className="text-sm text-on-surface-variant/80 mt-1 line-clamp-1">{item.product.description}</p>
                     </div>
                     <div className="flex items-center gap-8 w-full md:w-auto justify-between md:justify-end">
-                      <div className="flex items-center bg-surface-container-highest/50 rounded-full border border-outline-variant/20 px-3 py-1">
-                        <button onClick={() => updateQuantity(item.product.id, Math.max(1, item.quantity - 1))} className="material-symbols-outlined text-sm text-on-surface-variant hover:text-primary transition-colors cursor-pointer">remove</button>
-                        <span className="mx-4 font-label font-bold text-sm w-4 text-center">{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="material-symbols-outlined text-sm text-on-surface-variant hover:text-primary transition-colors cursor-pointer">add</button>
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="flex items-center bg-surface-container-highest/50 rounded-full border border-outline-variant/20 px-3 py-1">
+                          <button onClick={() => updateQuantity(item.product.id, Math.max(1, item.quantity - 1))} className="material-symbols-outlined text-sm text-on-surface-variant hover:text-primary transition-colors cursor-pointer">remove</button>
+                          <span className="mx-4 font-label font-bold text-sm w-4 text-center">{item.quantity}</span>
+                          <button 
+                            onClick={() => {
+                              if (item.quantity >= item.product.stock) {
+                                alert(settings.shopping.language === "vi" 
+                                  ? `Sản phẩm ${item.product.name} chỉ còn ${item.product.stock} sản phẩm trong kho.` 
+                                  : `Only ${item.product.stock} items available in stock for ${item.product.name}.`
+                                );
+                                return;
+                              }
+                              updateQuantity(item.product.id, item.quantity + 1);
+                            }} 
+                            className="material-symbols-outlined text-sm text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
+                          >
+                            add
+                          </button>
+                        </div>
+                        {item.product.stock <= 5 && (
+                          <span className="text-[9px] text-yellow-400 font-bold uppercase tracking-widest animate-pulse">
+                            {settings.shopping.language === "vi" ? `Chỉ còn ${item.product.stock} sản phẩm` : `Only ${item.product.stock} left`}
+                          </span>
+                        )}
                       </div>
                       <div className="text-right min-w-[120px]">
                         <Price amount={item.product.price * item.quantity} className="text-lg font-headline font-bold text-primary-fixed" />

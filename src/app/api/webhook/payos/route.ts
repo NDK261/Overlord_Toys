@@ -4,6 +4,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyPayOSWebhookData } from "@/lib/payos";
 import { sendOrderConfirmationEmail } from "@/lib/smtp";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -55,8 +57,28 @@ export async function POST(request: NextRequest) {
 
         const { data: orderItems } = await supabase
           .from("order_items")
-          .select("quantity, price, products(name)")
+          .select("product_id, quantity, price, products(name)")
           .eq("order_id", orderId);
+
+        // Trừ kho hàng đối với đơn hàng online PayOS thành công
+        if (orderItems) {
+          for (const item of orderItems) {
+            if (item.product_id) {
+              const { data: dbProd } = await supabase
+                .from("products")
+                .select("stock")
+                .eq("id", item.product_id)
+                .single();
+              if (dbProd) {
+                const newStock = Math.max(0, dbProd.stock - item.quantity);
+                await supabase
+                  .from("products")
+                  .update({ stock: newStock })
+                  .eq("id", item.product_id);
+              }
+            }
+          }
+        }
 
         if (fullOrder && fullOrder.customer_email && orderItems) {
           try {

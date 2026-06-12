@@ -1,8 +1,11 @@
 // src/app/api/checkout/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createPublicServerSupabaseClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { PaymentFactory } from "@/lib/payment/PaymentFactory";
 import { sendOrderConfirmationEmail } from "@/lib/smtp";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,11 +29,37 @@ export async function POST(request: NextRequest) {
     // Get current user if exists
     const { data: { user } } = await supabase.auth.getUser();
 
-    // 1. Tính tổng tiền sản phẩm
-    const subtotal = items.reduce(
-      (sum: number, item: any) => sum + item.product.price * item.quantity,
-      0
-    );
+    // 1. Lấy thông tin sản phẩm thực tế từ Database để xác thực giá và tồn kho
+    const productIds = items.map((item: any) => item.product.id);
+    const { data: dbProducts, error: dbProductsError } = await supabase
+      .from("products")
+      .select("id, name, price, stock")
+      .in("id", productIds);
+
+    if (dbProductsError || !dbProducts) {
+      return NextResponse.json({ error: "Không thể xác thực thông tin sản phẩm từ database" }, { status: 500 });
+    }
+
+    const productMap = new Map(dbProducts.map((p) => [p.id, p]));
+
+    // Kiểm tra hàng tồn kho trước khi thanh toán
+    for (const item of items) {
+      const dbProduct = productMap.get(item.product.id);
+      if (!dbProduct) {
+        return NextResponse.json({ error: `Sản phẩm ${item.product.name} không tồn tại trên hệ thống` }, { status: 400 });
+      }
+      if (dbProduct.stock < item.quantity) {
+        return NextResponse.json({ 
+          error: `Sản phẩm ${dbProduct.name} không đủ hàng tồn kho. Chỉ còn lại ${dbProduct.stock} sản phẩm.` 
+        }, { status: 400 });
+      }
+    }
+
+    // Tính tổng tiền sản phẩm (Dựa trên giá gốc trong database để tránh sửa giá từ client)
+    const subtotal = items.reduce((sum: number, item: any) => {
+      const dbProduct = productMap.get(item.product.id);
+      return sum + (dbProduct?.price || 0) * item.quantity;
+    }, 0);
 
     // 2. Tính toán Voucher (Securely on server)
     const findVoucher = (code: string | undefined) => {
@@ -100,15 +129,40 @@ export async function POST(request: NextRequest) {
     if (orderError) throw orderError;
 
     // 3. Tạo chi tiết đơn hàng `order_items`
-    const orderItems = items.map((item: any) => ({
-      order_id: order.id,
-      product_id: item.product.id,
-      quantity: item.quantity,
-      price: item.product.price,
-    }));
+    const orderItems = items.map((item: any) => {
+      const dbProduct = productMap.get(item.product.id);
+      return {
+        order_id: order.id,
+        product_id: item.product.id,
+        quantity: item.quantity,
+        price: dbProduct?.price || 0,
+      };
+    });
 
     const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
     if (itemsError) throw itemsError;
+
+    // Trừ kho hàng đối với đơn hàng COD (Thanh toán khi nhận hàng)
+    if (paymentMethod === "cod") {
+      const adminSupabase = createAdminClient();
+      for (const item of items) {
+        const dbProduct = productMap.get(item.product.id);
+        if (dbProduct) {
+          const newStock = Math.max(0, dbProduct.stock - item.quantity);
+          const { error: stockError } = await adminSupabase
+            .from("products")
+            .update({ stock: newStock })
+            .eq("id", dbProduct.id);
+            
+          if (stockError) {
+            console.error(`[CHECKOUT STOCK ERROR] Không thể cập nhật tồn kho cho sản phẩm ${dbProduct.name}:`, stockError.message);
+          } else {
+            console.log(`[CHECKOUT STOCK] Cập nhật tồn kho sản phẩm ${dbProduct.name}: ${dbProduct.stock} -> ${newStock}`);
+          }
+        }
+      }
+    }
+
 
     // 4. Xử lý thanh toán thông qua PaymentFactory (Factory Method Pattern)
     const paymentProvider = PaymentFactory.getProvider(paymentMethod);

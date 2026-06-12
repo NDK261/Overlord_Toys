@@ -12,7 +12,12 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
   const [error, setError] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [thumbnailUrl, setThumbnailUrl] = useState(initialData?.thumbnail_url || "");
+  const [detailImages, setDetailImages] = useState<string[]>(
+    initialData?.product_images?.map((img: any) => img.url) || []
+  );
+  const [uploadingNewDetail, setUploadingNewDetail] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const detailFileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -50,6 +55,46 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
     }
   };
 
+  const handleDetailImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingNewDetail(true);
+      setError(null);
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('products')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('products')
+        .getPublicUrl(filePath);
+
+      setDetailImages((prev) => [...prev, publicUrl]);
+    } catch (err: any) {
+      console.error('Detail upload error:', err);
+      setError(err.message || "Failed to upload detail image.");
+    } finally {
+      setUploadingNewDetail(false);
+      if (detailFileInputRef.current) {
+        detailFileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleRemoveDetailImage = (indexToRemove: number) => {
+    setDetailImages((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+
   useEffect(() => {
     async function fetchCategories() {
       const data = await getCategories();
@@ -64,6 +109,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
     setError(null);
 
     const formData = new FormData(event.currentTarget);
+    formData.append("detail_images", JSON.stringify(detailImages));
     const result = initialData 
       ? await updateProduct(initialData.id, formData)
       : await createProduct(formData);
@@ -222,6 +268,64 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                   ref={fileInputRef}
                   onChange={handleImageUpload}
                 />
+              </div>
+
+              {/* Detail Images Slider section */}
+              <div className="space-y-4 pt-6 border-t border-white/5">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#6FF7E8]"></span>
+                  <label className="text-[10px] font-bold text-[#6FF7E8] uppercase tracking-[0.2em] ml-1">Detail Images (Slider Carousel)</label>
+                </div>
+                
+                {detailImages.length > 0 && (
+                  <div className="grid grid-cols-4 gap-4 p-4 rounded-xl bg-white/2 border border-white/5">
+                    {detailImages.map((url, idx) => (
+                      <div key={idx} className="relative w-full aspect-square rounded-lg bg-white/5 border border-white/10 overflow-hidden group/img shadow-inner">
+                        <img src={url} alt={`Detail ${idx + 1}`} className="w-full h-full object-cover" />
+                        <button 
+                          type="button"
+                          onClick={() => handleRemoveDetailImage(idx)}
+                          className="absolute inset-0 bg-black/70 opacity-0 group-hover/img:opacity-100 flex flex-col items-center justify-center text-red-400 hover:text-red-300 transition-all gap-1 cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-lg">delete</span>
+                          <span className="text-[8px] uppercase font-black tracking-widest">Remove</span>
+                        </button>
+                      </div>
+                    ))}
+                    {uploadingNewDetail && (
+                      <div className="relative w-full aspect-square rounded-lg bg-white/5 border border-white/10 border-dashed overflow-hidden flex flex-col items-center justify-center">
+                        <div className="w-6 h-6 rounded-full border-2 border-[#6FF7E8]/20 border-t-[#6FF7E8] animate-spin" />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div 
+                  className={`p-6 bg-white/2 border border-white/5 rounded-xl border-dashed cursor-pointer text-center transition-all hover:bg-white/5 hover:border-[#6FF7E8]/50 ${uploadingNewDetail ? 'opacity-50 pointer-events-none' : ''}`}
+                  onClick={() => detailFileInputRef.current?.click()}
+                >
+                  <div className="flex flex-col items-center justify-center gap-2 text-on-surface-variant opacity-60">
+                    {uploadingNewDetail ? (
+                      <>
+                        <div className="w-6 h-6 rounded-full border-2 border-[#6FF7E8]/20 border-t-[#6FF7E8] animate-spin" />
+                        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[#6FF7E8] animate-pulse">UPLINKING TO CLOUD...</p>
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-2xl group-hover:text-[#6FF7E8] transition-colors">add_photo_alternate</span>
+                        <p className="text-[9px] font-black uppercase tracking-[0.15em]">Neural Detail Attachment</p>
+                        <p className="text-[7px] uppercase tracking-widest opacity-50">Add Secondary Slide Image</p>
+                      </>
+                    )}
+                  </div>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    ref={detailFileInputRef}
+                    onChange={handleDetailImageUpload}
+                  />
+                </div>
               </div>
             </div>
           </div>

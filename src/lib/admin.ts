@@ -1,4 +1,4 @@
-import { createPublicServerSupabaseClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 const startOfDay = (d: Date) => {
   const newDate = new Date(d);
   newDate.setHours(0, 0, 0, 0);
@@ -12,7 +12,7 @@ const subDays = (d: Date, days: number) => {
 };
 
 export async function getDashboardStats() {
-  const supabase = createPublicServerSupabaseClient();
+  const supabase = createAdminClient();
 
   // 1. Total Revenue (completed or paid)
   const { data: revenueData } = await supabase
@@ -51,7 +51,7 @@ export async function getDashboardStats() {
 }
 
 export async function getRecentOrders(limit = 4) {
-  const supabase = createPublicServerSupabaseClient();
+  const supabase = createAdminClient();
   const { data: orders } = await supabase
     .from("orders")
     .select("*")
@@ -62,7 +62,7 @@ export async function getRecentOrders(limit = 4) {
 }
 
 export async function getRevenueMetrics() {
-  const supabase = createPublicServerSupabaseClient();
+  const supabase = createAdminClient();
   
   // Get last 7 days
   const today = startOfDay(new Date());
@@ -99,7 +99,7 @@ export async function getRevenueMetrics() {
 }
 
 export async function getTopSellingProducts(limit = 5) {
-  const supabase = createPublicServerSupabaseClient();
+  const supabase = createAdminClient();
   
   // Since complex GROUP BY requires RPC, we fetch order items from recent completed/paid orders.
   // To avoid fetching too much, we fetch all order items for completed/paid orders.

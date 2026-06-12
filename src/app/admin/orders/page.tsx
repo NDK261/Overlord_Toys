@@ -1,32 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
 import OrderDetailModal from "./OrderDetailModal";
+import { getAdminOrders } from "./actions";
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
     async function fetchOrders() {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const result = await getAdminOrders();
 
-      if (error) {
-        setError(error.message);
+      if (!result.success) {
+        setError(result.error || "Không thể lấy danh sách đơn hàng.");
       } else {
-        setOrders(data || []);
+        setOrders(result.data || []);
       }
       setLoading(false);
     }
 
     fetchOrders();
   }, []);
+
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-[400px]">
@@ -40,6 +39,11 @@ export default function AdminOrdersPage() {
       <p className="text-sm">{error}</p>
     </div>
   );
+
+  const filteredOrders = orders.filter((order) => {
+    if (statusFilter === "all") return true;
+    return order.status?.toLowerCase() === statusFilter.toLowerCase();
+  });
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -62,12 +66,18 @@ export default function AdminOrdersPage() {
       {/* Filter Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <select className="bg-white/5 text-white border border-white/10 rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-widest focus:ring-1 ring-[#6FF7E8]/50 outline-none transition-all">
-            <option className="bg-[#06151a]">All Status</option>
-            <option className="bg-[#06151a]">Pending</option>
-            <option className="bg-[#06151a]">Processing</option>
-            <option className="bg-[#06151a]">Completed</option>
-            <option className="bg-[#06151a]">Cancelled</option>
+          <select 
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="bg-white/5 text-white border border-white/10 rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-widest focus:ring-1 ring-[#6FF7E8]/50 outline-none transition-all"
+          >
+            <option className="bg-[#06151a]" value="all">All Status</option>
+            <option className="bg-[#06151a]" value="pending">Pending</option>
+            <option className="bg-[#06151a]" value="processing">Processing</option>
+            <option className="bg-[#06151a]" value="completed">Completed</option>
+            <option className="bg-[#06151a]" value="paid">Paid</option>
+            <option className="bg-[#06151a]" value="shipped">Shipped</option>
+            <option className="bg-[#06151a]" value="cancelled">Cancelled</option>
           </select>
         </div>
       </div>
@@ -87,14 +97,15 @@ export default function AdminOrdersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {orders.length === 0 ? (
+              {filteredOrders.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-on-surface-variant text-sm italic">
                     No transaction logs detected in this sector.
                   </td>
                 </tr>
               ) : (
-                orders.map((order) => (
+                filteredOrders.map((order) => (
+
                   <tr key={order.id} className="group hover:bg-[#6FF7E8]/5 transition-all">
                     <td className="px-6 py-5">
                       <p className="text-sm font-black text-[#6FF7E8] font-mono uppercase tracking-tighter">

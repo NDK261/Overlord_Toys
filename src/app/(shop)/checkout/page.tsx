@@ -151,6 +151,17 @@ export default function CheckoutPage() {
     e.preventDefault();
     setLoading(true);
 
+    const trimmedPhone = formData.phone?.trim();
+    const isValidPhone = /^0\d{9}$/.test(trimmedPhone);
+    if (!isValidPhone) {
+      alert(settings.shopping.language === "vi" 
+        ? "Số điện thoại không hợp lệ. Chỉ được nhập số, phải bắt đầu bằng số 0 và có đúng 10 chữ số." 
+        : "Invalid phone number. Must contain only digits, start with 0, and have exactly 10 digits."
+      );
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch("/api/checkout", {
         method: "POST",

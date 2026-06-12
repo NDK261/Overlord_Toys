@@ -99,11 +99,13 @@ export function useCart() {
       const existing = prev.find((item) => item.product.id === product.id);
       let nextItems: CartItem[];
       if (existing) {
+        const targetQty = Math.min(product.stock, existing.quantity + quantity);
         nextItems = prev.map((item) =>
-          item.product.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
+          item.product.id === product.id ? { ...item, quantity: targetQty } : item
         );
       } else {
-        nextItems = [...prev, { product, quantity }];
+        const targetQty = Math.min(product.stock, quantity);
+        nextItems = [...prev, { product, quantity: targetQty }];
       }
       persistCart(nextItems);
       return nextItems;
@@ -120,8 +122,12 @@ export function useCart() {
       return;
     }
     setItems((prev) => {
+      const existing = prev.find((item) => item.product.id === productId);
+      if (!existing) return prev;
+      
+      const targetQty = Math.min(existing.product.stock, quantity);
       const nextItems = prev.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item
+        item.product.id === productId ? { ...item, quantity: targetQty } : item
       );
       persistCart(nextItems);
       return nextItems;
